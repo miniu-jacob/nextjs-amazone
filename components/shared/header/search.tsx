@@ -1,7 +1,7 @@
 // components/shared/header/search.tsx
 
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { config } from "@/lib/app.config";
 import { SearchIcon } from "lucide-react";
 

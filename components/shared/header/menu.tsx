@@ -1,7 +1,7 @@
 // components/shared/header/menu.tsx
 
 import Link from "next/link";
-import { ShoppingCartIcon, UserIcon } from "lucide-react";
+import { ShoppingCartIcon } from "lucide-react";
 
 export default function Menu() {
   return (
