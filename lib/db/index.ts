@@ -6,7 +6,7 @@ const cached = (global as any).mongoose || { conn: null, promise: null };
 
 export const connectToDatabase = async () => {
   // 환경 변수에서 MongoDB URI 를 가져온다.
-  const MONGODB_URI = config.MONGODB_URI;
+  const MONGODB_URI = process.env.MONGODB_URI || config.MONGODB_URI;
 
   // clog.info("[ConnectToDatabase - MONGODB_URI]", MONGODB_URI);
   if (cached.conn) return cached.conn;
