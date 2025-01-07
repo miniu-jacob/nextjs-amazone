@@ -1,9 +1,11 @@
 // lib/get-env.ts
-import dotenv from "dotenv";
-import { cwd } from "process";
 
-// .env.local 파일을 명시적으로 로드
-dotenv.config({ path: `${cwd()}/.env.local` });
+//  개발 환경에서만 .env.local 파일을 명시적으로 로드
+if (process.env.NODE_ENV !== "production") {
+  import("dotenv").then((dotenv) => {
+    dotenv.config({ path: `${process.cwd()}/.env.local` });
+  });
+}
 
 export const getEnv = (key: string, defaultValue: string = "") => {
   const value = process.env[key];
