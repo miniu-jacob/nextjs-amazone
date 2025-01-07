@@ -15,7 +15,7 @@ const main = async () => {
     const { products } = data;
 
     // (3). DB 에 연결한다. connectToDatabase 함수에서 이미 MONGODB_URI 환경 변수를 사용하기 때문에 인자가 필요없다.
-    await connectToDatabase();
+    await connectToDatabase(process.env.MONGODB_URI);
 
     // (4). 기존 데이터 삭제 및 새 데이터 삽입
     await Product.deleteMany();
