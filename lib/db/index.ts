@@ -1,7 +1,6 @@
 // lib/db/index.ts
 import mongoose from "mongoose";
 import { config } from "../app.config";
-import { clog } from "../jlogger";
 
 const cached = (global as any).mongoose || { conn: null, promise: null };
 
