@@ -9,9 +9,12 @@ export default async function Search() {
   const categories = ["men", "women", "kids", "accessories"];
   return (
     // TODO: search 컴포넌트 만들기
-    <form action={"/search"} method="GET" className="flex items-stretch h-10">
+    <form
+      action={"/search"}
+      method="GET"
+      className="flex items-stretch h-10">
       <Select name="category">
-        <SelectTrigger
+      <SelectTrigger
           className="w-auto h-full dark:border-gray-200 bg-gray-100 text-black border-r
         rounded-r-none rounded-l-md rtl:rounded-r-md rtl:rounded-l-none">
           <SelectValue placeholder={"All"} />
