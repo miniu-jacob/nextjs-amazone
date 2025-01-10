@@ -20,3 +20,20 @@ export const toSlug = (text: string): string =>
     .replace(/[^\w\s-]+/g, "")
     .replace(/\s+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+// 숫자를 통화 형식으로 변환하는 유틸리티
+const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
+  currency: "USD", // 통화 단위
+  style: "currency", // 통화 형식
+  minimumFractionDigits: 2, // 소수점 자릿수
+});
+
+export function formatCurrency(amount: number) {
+  return CURRENCY_FORMATTER.format(amount);
+}
+
+// 숫자를 천 단위로 콤마(,)를 찍어주는 유틸리티
+const NUMBER_FORMATTER = new Intl.NumberFormat("en-US");
+export function formatNumber(number: number) {
+  return NUMBER_FORMATTER.format(number);
+}
