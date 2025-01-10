@@ -22,6 +22,9 @@ export default async function Page() {
   // 슬라이더에 들어갈 today's deals 상품을 조회한다.
   const todaysDeals = await getProductsByTag({ tag: "todays-deal" });
 
+  // Best Selling 상품을 조회한다.
+  const bestSellingProducts = await getProductsByTag({ tag: "best-seller" });
+
   // 테스트용 데이터를 불러온다.
   // const testDeals = sampleProducts as ProductWithStringId[];
 
@@ -73,6 +76,12 @@ export default async function Page() {
         <Card className="w-full rounded-none">
           <CardContent className="p-4 items-center gap-3">
             <ProductSlider title={"Today's Deals"} products={todaysDeals} />
+          </CardContent>
+        </Card>
+        {/* BEST SELLING */}
+        <Card className="w-full rounded-none">
+          <CardContent className="p-4 items-center gap-3">
+            <ProductSlider title="Best Selling Products" products={bestSellingProducts} hideDetails />
           </CardContent>
         </Card>
       </div>
