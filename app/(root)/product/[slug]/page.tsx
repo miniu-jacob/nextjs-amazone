@@ -1,5 +1,7 @@
 // app/(root)/product/[slug]/page.tsx
 
+import BrowsingHistoryList from "@/components/shared/browsing-history-list";
+import AddToBrowsingHistory from "@/components/shared/product/add-to-browsing-history";
 import ProductGallery from "@/components/shared/product/product-gallery";
 import ProductOptions from "@/components/shared/product/product-options";
 import ProductPrice from "@/components/shared/product/product-price";
@@ -54,6 +56,8 @@ export default async function ProductDetails(props: {
 
   return (
     <div>
+      {/* 사용자가 본 상품을 히스토리에 추가하기 */}
+      <AddToBrowsingHistory id={product._id} category={product.category} />
       <section>
         <div className="grid grid-cols-1 md:grid-cols-5">
           {/* 이미지 영역 */}
@@ -115,6 +119,10 @@ export default async function ProductDetails(props: {
       {/* 두 번째 섹션 */}
       <section className="mt-10">
         <ProductSlider products={relatedProducts.data} title={`Best Sellers in ${product.category}`} />
+      </section>
+      {/* 세 번째 섹션 - Browsing history */}
+      <section>
+        <BrowsingHistoryList className="mt-10" />
       </section>
     </div>
   );
