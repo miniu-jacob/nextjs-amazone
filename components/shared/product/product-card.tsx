@@ -5,9 +5,10 @@ import Link from "next/link";
 import ImageHover from "./image-hover";
 import Image from "next/image";
 import Rating from "./rating";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, generateId, round2 } from "@/lib/utils";
 import ProductPrice from "./product-price";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import AddToCart from "./add-to-cart";
 
 type ProductCardProps = {
   product: IProduct;
@@ -16,7 +17,7 @@ type ProductCardProps = {
   hideAddToCart?: boolean;
 };
 
-const ProductCard = ({ product, hideBorder = false, hideDetails = false }: ProductCardProps) => {
+const ProductCard = ({ product, hideBorder = false, hideDetails = false, hideAddToCart = false }: ProductCardProps) => {
   // (1). 상품 이미지에 대한 랜더링을 처리하는 컴포넌트를 정의한다.
   const ProductImage = () => (
     // (a). 이미지가 두 개 이상인 경우 첫 번째 이미지를 사용
@@ -67,6 +68,28 @@ const ProductCard = ({ product, hideBorder = false, hideDetails = false }: Produ
     </div>
   );
 
+  // (2.5). 장바구니 추가 버튼을 정의해 준다.
+  const AddButton = () => (
+    <div className="w-full text-center">
+      <AddToCart
+        minimal
+        item={{
+          clientId: generateId(), // 임의의 클라이언트 아이디 생성
+          product: product._id, // 상품 아이디
+          size: product.sizes[0], // 사이즈
+          color: product.colors[0], // 컬러
+          countInStock: product.countInStock, // 재고 수량
+          name: product.name, // 상품 이름
+          slug: product.slug, // 상품 슬러그
+          category: product.category, // 상품 카테고리
+          price: round2(product.price), // 상품 가격
+          quantity: 1, // 자동 추가이기 때문에 수량은 1로 설정한다.
+          image: product.images[0], // 상품 이미지
+        }}
+      />
+    </div>
+  );
+
   // (3). 상품 카드에 대한 전체 구조를 정의한다.
   return hideBorder ? (
     // (a). 테두리가 없는 경우 > 세로 정렬
@@ -78,6 +101,8 @@ const ProductCard = ({ product, hideBorder = false, hideDetails = false }: Produ
           <div className="p-3 flex-1 text-center">
             <ProductDetails />{" "}
           </div>
+          {/* 장바구니 버튼 추가 */}
+          {!hideAddToCart && <AddButton />}
         </>
       )}
     </div>
@@ -91,6 +116,8 @@ const ProductCard = ({ product, hideBorder = false, hideDetails = false }: Produ
           <CardContent className="p-3 flex-1 text-center">
             <ProductDetails />
           </CardContent>
+          {/* 이 경우는 어떤 경우지?  */}
+          <CardFooter className="p-3">{!hideAddToCart && <AddButton />}</CardFooter>
         </>
       )}
     </Card>

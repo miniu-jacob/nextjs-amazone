@@ -2,6 +2,7 @@
 
 import BrowsingHistoryList from "@/components/shared/browsing-history-list";
 import AddToBrowsingHistory from "@/components/shared/product/add-to-browsing-history";
+import AddToCart from "@/components/shared/product/add-to-cart";
 import ProductGallery from "@/components/shared/product/product-gallery";
 import ProductOptions from "@/components/shared/product/product-options";
 import ProductPrice from "@/components/shared/product/product-price";
@@ -10,6 +11,7 @@ import Rating from "@/components/shared/product/rating";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getProductBySlug, getRelatedProductsByCategory } from "@/lib/actions/product.actions";
+import { generateId, round2 } from "@/lib/utils";
 
 // (1). 메타데이터를 생성하는 함수를 정의한다.
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
@@ -110,6 +112,27 @@ export default async function ProductDetails(props: {
                   <div className="text-green-700 text-xl">In Stock</div>
                 ) : (
                   <div className="text-destructive text-xl">Out of Stock</div>
+                )}
+                {/* 장바구니 담기 컴포넌트 추가 */}
+                {product.countInStock !== 0 && (
+                  // 재고가 있다면
+                  <div className="flex justify-center items-center">
+                    <AddToCart
+                      item={{
+                        clientId: generateId(), // 카트 추가 시 임의의 클라이언트 아이디를 생성한다.
+                        product: product._id, // 상품 아이디
+                        countInStock: product.countInStock, // 재고 수량
+                        name: product.name, // 상품 이름
+                        slug: product.slug, // 상품 슬러그
+                        category: product.category, // 상품 카테고리
+                        price: round2(product.price), // 상품 가격
+                        quantity: 1, // 수량은 1로 초기화
+                        image: product.images[0], // 상품 이미지
+                        size: size || product.sizes[0], // 사이즈
+                        color: color || product.colors[0], // 컬러
+                      }}
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>

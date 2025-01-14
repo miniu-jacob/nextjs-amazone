@@ -1,7 +1,7 @@
 // components/shared/header/menu.tsx
 
 import Link from "next/link";
-import { ShoppingCartIcon } from "lucide-react";
+import CartButton from "./cart-button";
 
 export default function Menu() {
   return (
@@ -11,12 +11,14 @@ export default function Menu() {
           Hello, Sign in
         </Link>
 
-        <Link href={"/cart"} className="header-button">
+        {/* 카트 Link 대신 CartButton 컴포넌트 랜더링 */}
+        <CartButton />
+        {/* <Link href={"/cart"} className="header-button">
           <div className="flex items-end">
             <ShoppingCartIcon className="h-6 w-6 mr-1" />
             Cart
           </div>
-        </Link>
+        </Link> */}
       </nav>
     </div>
   );

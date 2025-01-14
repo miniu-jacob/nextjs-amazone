@@ -1,6 +1,6 @@
 // types/index.ts
 
-import { ProductInputSchema } from "@/lib/validator";
+import { CartSchema, OrderItemSchema, ProductInputSchema } from "@/lib/validator";
 import { z } from "zod";
 
 export type IProductInput = z.infer<typeof ProductInputSchema>;
@@ -21,3 +21,7 @@ export type Data = {
     isPublished: boolean;
   }[];
 };
+
+// 주문아이템, 카트에 대한 타입을 정의해 준다.
+export type OrderItem = z.infer<typeof OrderItemSchema>;
+export type Cart = z.infer<typeof CartSchema>;

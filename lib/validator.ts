@@ -40,3 +40,30 @@ export const ProductInputSchema = z.object({
   // 총 판매 수량
   numSales: z.coerce.number().int().nonnegative("Number of sales must be a non-negative number"),
 });
+
+// 장바구니(카트)에 들어가는 아이템의 유효성 검사를 위한 스키마를 정의한다.
+export const OrderItemSchema = z.object({
+  clientId: z.string().min(1, "Client ID is required"), // 클라이언트 ID
+  product: z.string().min(1, "Product ID is required"), // 상품 ID
+  name: z.string().min(1, "Name is required"), // 상품 이름
+  slug: z.string().min(1, "Slug is required"), // 상품 슬러그
+  category: z.string().min(1, "Category is required"), // 상품 카테고리
+  quantity: z.number().int().nonnegative("Quantity must be a non-negative number"), // 수량
+  countInStock: z.number().int().nonnegative("Quantity must be a non-negative number"), // 재고 수량
+  image: z.string().min(1, "Image is required"), // 상품 이미지
+  price: Price("Price"), // 가격
+  size: z.string().optional(), // 사이즈
+  color: z.string().optional(), // 색상
+});
+
+// 카트 유효성검사를 위한 스키마를 정의한다.
+export const CartSchema = z.object({
+  items: z.array(OrderItemSchema).min(1, "Cart must have at least one item"), // 카트에 담긴 아이템
+  itemsPrice: z.number(), // 상품 가격
+  taxPrice: z.optional(z.number()), // 세금
+  shippingPrice: z.optional(z.number()), // 배송비
+  totalPrice: z.number(), // 총 가격
+  paymentMethod: z.optional(z.string()), // 결제 수단
+  deliveryDateIndex: z.optional(z.number()), // 배송 날짜 인덱스
+  expectedDeliveryDate: z.optional(z.date()), // 예상 배송 날짜
+});
