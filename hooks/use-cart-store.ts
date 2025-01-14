@@ -21,6 +21,9 @@ interface CartState {
   cart: Cart; // 카트 상태를 정의하면서 타입을 Cart로 설정한다.
   // 아이템을 카트에 추가하는 메소드로 제품의 clientId를 반환한다.
   addItem: (item: OrderItem, quantity: number) => Promise<string>; // 아이템을 추가하는 함수를 정의한다.
+  // 상품 업데이트, 제거 함수 추가
+  updateItem: (item: OrderItem, quantity: number) => Promise<void>; // 아이템을 업데이트하는 함수를 정의한다.
+  removeItem: (item: OrderItem) => void;
 }
 
 const useCartStore = create(
@@ -50,9 +53,7 @@ const useCartStore = create(
         // 카트를 업데이트한다.
         const updatedCartItems = existItem
           ? items.map((x) =>
-              x.product === item.product && x.color === item.color && x.size === item.size
-                ? { ...existItem, quantity: existItem.quantity + quantity }
-                : x,
+              x.product === item.product && x.color === item.color && x.size === item.size ? { ...existItem, quantity: quantity } : x,
             )
           : [...items, { ...item, quantity }];
 
@@ -70,6 +71,43 @@ const useCartStore = create(
         // 제품의 clientId를 반환한다.
         // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         return updatedCartItems.find((x) => x.product === item.product && x.color === item.color && x.size === item.size)?.clientId!;
+      }, // End of addItem
+
+      // ### (2). 상품 업데이트 함수 정의
+      updateItem: async (item: OrderItem, quantity: number) => {
+        // get() 함수를 사용하여 현재 카트 상태를 가져온다.
+        const { items } = get().cart;
+
+        // 카트에 있는 아이템이 이미 있는지 확인한다.
+        const exist = items.find((x) => x.product === item.product && x.color === item.color && x.size === item.size);
+        if (!exist) return;
+
+        // 상품의 수량을 업데이트한다.
+        const updatedCartItems = items.map((x) =>
+          x.product === item.product && x.color === item.color && x.size === item.size ? { ...exist, quantity } : x,
+        );
+
+        // 카트(장바구니) 상태를 업데이트한다.
+        set({
+          cart: {
+            ...get().cart, // 기존 카트 상태를 가져온다.
+            items: updatedCartItems,
+            ...(await calcDeliveryDateAndPrice({ items: updatedCartItems })), // 배송 정보를 업데이트한다.
+          },
+        });
+      },
+      // ### (3). 아이템을 제거하는 함수를 정의한다.
+      removeItem: async (item: OrderItem) => {
+        const { items } = get().cart; // get() 함수를 사용하여 현재 카트 상태를 가져온다.
+        const updatedCartItems = items.filter((x) => x.product !== item.product || x.color !== item.color || x.size !== item.size);
+        // 카트(장바구니) 상태를 업데이트한다.
+        set({
+          cart: {
+            ...get().cart, // 기존 카트 상태를 가져온다.
+            items: updatedCartItems,
+            ...(await calcDeliveryDateAndPrice({ items: updatedCartItems })), // 배송 정보를 업데이트한다.
+          },
+        });
       },
       init: () => set({ cart: initialState }), // 초기화 함수를 정의한다.
     }),

@@ -7,7 +7,6 @@ import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import ProductSlider from "./product/product-slider";
-import { clog } from "@/lib/jlogger";
 
 type ProductListProps = {
   title: string;
@@ -44,8 +43,6 @@ function ProductList({ title, type = "history", hideDetails = false }: ProductLi
   useEffect(() => {
     const fetchProducts = async () => {
       const URL = "/api/products/browsing-history";
-      clog.info("[BrowsingHistoryList] fetchProducts started");
-      clog.info("[BrowsingHistoryList] API", URL);
       const response = await fetch(
         `${URL}?type=${type}&categories=${products.map((p) => p.category).join(",")}&ids=${products.map((p) => p.id).join(",")} `,
       );
