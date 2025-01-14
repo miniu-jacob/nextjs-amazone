@@ -19,7 +19,8 @@ export const toSlug = (text: string): string =>
     .toLowerCase()
     .replace(/[^\w\s-]+/g, "")
     .replace(/\s+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .replace(/^-+|-+$/g, "")
+    .replace(/-+/g, "-");
 
 // 숫자를 통화 형식으로 변환하는 유틸리티
 const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {

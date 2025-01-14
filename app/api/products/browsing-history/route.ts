@@ -2,7 +2,6 @@
 
 import { connectToDatabase } from "@/lib/db";
 import Product from "@/lib/db/models/product.model";
-import { clog } from "@/lib/jlogger";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -20,7 +19,7 @@ export const GET = async (req: NextRequest) => {
   const productIds = productIdsParam.split(",");
   const categories = categoriesParam.split(",");
 
-  clog.info("[GET] productIds: ", productIds);
+  // clog.info("[GET] productIds: ", productIds);
 
   // (4). DB 검색 조건을 설정한다.
   const filter =
