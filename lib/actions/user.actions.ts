@@ -1,12 +1,15 @@
 // lib/actions/user.actions.ts
 "use server";
 
-import { IUserSignIn } from "@/types";
+import bcrypt from "bcryptjs";
+import { IUserSignIn, IUserSignUp } from "@/types";
 import { signIn, signOut } from "../auth";
 import { redirect } from "next/navigation";
 import { connectToDatabase } from "../db";
 import User from "../db/models/user.model";
 import { clog } from "../jlogger";
+import { formatError } from "../utils";
+import { UserSignUpSchema } from "../user-validator";
 
 // (1). 사용자의 이메일과 비밀번호를 사용하여 로그인을 하는 서버 액션
 export async function signInWithCredentials(user: IUserSignIn) {
@@ -35,3 +38,28 @@ export const findUserByEmail = async (email: string) => {
     throw new Error("User not found");
   }
 };
+
+// (4). 회원가입 서버 액션을 정의해 준다.
+export async function registerUser(userSignUp: IUserSignUp) {
+  try {
+    // (a). 유저 정보를 유효성 검사
+    const user = await UserSignUpSchema.parseAsync({
+      name: userSignUp.name,
+      email: userSignUp.email,
+      password: userSignUp.password,
+      confirmPassword: userSignUp.confirmPassword,
+    });
+    // (b). DB 연결
+    await connectToDatabase();
+    // (c). 유저 생성
+    await User.create({
+      ...user, // 유효성 검사를 통과한 유저 정보
+      password: await bcrypt.hash(user.password, 5), // 비밀번호 해시화
+    });
+
+    // (d). 회원가입 성공 후 반환
+    return { success: true, message: "User created successfully" };
+  } catch (error) {
+    return { success: false, error: formatError(error) };
+  }
+}

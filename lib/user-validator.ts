@@ -9,7 +9,14 @@ const UserName = z
 
 const Email = z.string().min(1, "Email is required").email("Email is invalid");
 const Password = z.string().min(6, "Password must be at least 6 characters");
-const UserRole = z.string().min(1, "Role is required");
+// role을 소문자로 변환
+const UserRole = z
+  .string()
+  .default("user") // 기본값은 "user"
+  .transform((value) => value.toLowerCase()) // 입력값을 소문자로 변환
+  .refine((value) => ["user", "admin", "owner"].includes(value), {
+    message: "Invalid role. Please Input right roles.",
+  });
 
 export const UserInputSchema = z.object({
   name: UserName,
@@ -33,4 +40,14 @@ export const UserInputSchema = z.object({
 export const UserSignInSchema = z.object({
   email: Email,
   password: Password,
+});
+
+// 회원가입 유효성 검사 스키마
+// UserSignInSchema를 확장하여 회원가입 시 추가로 필요한 필드를 추가
+export const UserSignUpSchema = UserSignInSchema.extend({
+  name: UserName,
+  confirmPassword: Password,
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });

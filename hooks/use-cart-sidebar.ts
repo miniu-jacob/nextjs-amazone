@@ -7,7 +7,7 @@ import useDeviceType from "./use-device-type";
 // (3). 함수 밖에서 특정 경로인지 확인하는 변수를 선언한다.
 // 경로 s 가 제외 경로에 포함되어 있지 않아야 true를 반환한다.
 const isNotInPaths = (s: string) =>
-  !/^\/$|^\/cart$|^\/checkout$|^\/login$|^\/sign-up$|^\/order(\/.*)?$|^\/account(\/.*)?$|^\/admin(\/.*)?$/.test(s);
+  !/^\/$|^\/cart$|^\/checkout$|^\/login$|^\/register$|^\/order(\/.*)?$|^\/account(\/.*)?$|^\/admin(\/.*)?$/.test(s);
 
 function useCartSidebar() {
   // (1). 현재 경로를 가져온다. Next.js 에서는 usePathname Next.js 클라이언트 훅을 사용할 수 있다.
