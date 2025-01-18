@@ -16,6 +16,9 @@ import { connectToDatabase } from "./db";
 import bcrypt from "bcryptjs";
 import { clog } from "./jlogger";
 
+// OAuth
+import GoogleProvider from "next-auth/providers/google";
+
 // next-auth 에서 Session에 사용자의 역할(role)을 추가한다.
 declare module "next-auth" {
   interface Session {
@@ -47,6 +50,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   // providers 를 설정한다.
   providers: [
+    GoogleProvider({
+      allowDangerousEmailAccountLinking: true,
+    }),
     CredentialsProvider({
       credentials: { email: { type: "email" }, password: { type: "password" } },
       async authorize(credentials) {

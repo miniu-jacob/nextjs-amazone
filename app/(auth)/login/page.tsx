@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { findUserByEmail } from "@/lib/actions/user.actions";
 import { clog } from "@/lib/jlogger";
+import { GoogleSignInForm } from "./google-signin-form";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -48,6 +49,11 @@ export default async function SignIn({ searchParams: props }: SignInProps) {
             {/* LOGIN FORM */}
             <CredentialsSignInForm />
           </div>
+          {/* GOOGLE FORM */}
+          <SeparatorWithOr />
+            <div className='mt-4'>
+              <GoogleSignInForm />
+            </div>
         </CardContent>
       </Card>
       {/* 구분선 */}

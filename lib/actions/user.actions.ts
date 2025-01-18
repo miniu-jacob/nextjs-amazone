@@ -63,3 +63,8 @@ export async function registerUser(userSignUp: IUserSignUp) {
     return { success: false, error: formatError(error) };
   }
 }
+
+// (5). OAuth 로그인 서버 액션
+export const SignWithGoogle = async () => {
+  await signIn("google");
+};

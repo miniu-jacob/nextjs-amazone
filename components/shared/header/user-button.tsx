@@ -18,8 +18,7 @@ import Link from "next/link";
 
 export default async function UserButton() {
   const session = await auth();
-  const userRole = session?.user?.role.toLowerCase();
-  clog.info("[UserButton] userRole", userRole);
+  // clog.info("[UserButton] userRole", userRole);
 
   clog.info("[UserButton] session", session);
   return (
@@ -52,7 +51,7 @@ export default async function UserButton() {
                 <DropdownMenuItem>Your orders</DropdownMenuItem>
               </Link>
               {/* ADMIN 인 경우에 한해서 ADMIN 메뉴 보여주기 */}
-              {userRole === "admin" && (
+              {session.user.role === "admin" && (
                 <Link href={"/admin/overview"} className="w-full">
                   <DropdownMenuItem>Admin</DropdownMenuItem>
                 </Link>
