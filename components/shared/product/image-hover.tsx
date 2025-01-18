@@ -15,6 +15,7 @@ const ImageHover = ({ src, hoverSrc, alt }: ImageHoverProps) => {
   // (1). hover 할 이미지 상태 관리
   const [isHovered, setIsHovered] = useState(false);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let hoverTimeout: any;
   // (2). 마우스 오버 이벤트 핸들러
   const handleMouseEnter = () => {

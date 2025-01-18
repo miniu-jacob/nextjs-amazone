@@ -1,15 +1,16 @@
 // components/shared/header/menu.tsx
 
-import Link from "next/link";
 import CartButton from "./cart-button";
+import UserButton from "./user-button";
 
 export default function Menu() {
   return (
     <div className="flex justify-end">
       <nav className="flex gap-3 w-full">
-        <Link href={"/signin"} className="header-button flex items-center">
+        {/* <Link href={"/login"} className="header-button flex items-center">
           Hello, Sign in
-        </Link>
+        </Link> */}
+        <UserButton />
 
         {/* 카트 Link 대신 CartButton 컴포넌트 랜더링 */}
         <CartButton />
