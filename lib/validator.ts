@@ -56,6 +56,17 @@ export const OrderItemSchema = z.object({
   color: z.string().optional(), // 색상
 });
 
+// 배송 주소 스키마를 정의한다.
+export const ShippingAddressSchema = z.object({
+  fullName: z.string().min(1, "Full name is required"), // 이름
+  street: z.string().min(1, "Street is required"), // 주소
+  city: z.string().min(1, "City is required"), // 도시
+  postalCode: z.string().min(1, "Postal code is required"), // 우편번호
+  province: z.string().min(1, "Province is required"), // 주
+  phone: z.string().min(1, "Phone is required"), // 전화번호
+  country: z.string().min(1, "Country is required"), // 국가
+});
+
 // 카트 유효성검사를 위한 스키마를 정의한다.
 export const CartSchema = z.object({
   items: z.array(OrderItemSchema).min(1, "Cart must have at least one item"), // 카트에 담긴 아이템
@@ -64,6 +75,7 @@ export const CartSchema = z.object({
   shippingPrice: z.optional(z.number()), // 배송비
   totalPrice: z.number(), // 총 가격
   paymentMethod: z.optional(z.string()), // 결제 수단
+  shippingAddress: z.optional(ShippingAddressSchema), // 배송 주소
   deliveryDateIndex: z.optional(z.number()), // 배송 날짜 인덱스
   expectedDeliveryDate: z.optional(z.date()), // 예상 배송 날짜
 });

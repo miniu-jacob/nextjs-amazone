@@ -74,3 +74,74 @@ export const formatError = (error: any): string => {
     return typeof error.message === "string" ? error.message : JSON.stringify(error.message);
   }
 };
+
+// 현재 날짜로부터 특정 일 수 (days) 후의 날짜를 계산하는 유틸
+export function calculateFutureDate(days: number) {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() + days);
+  return currentDate;
+}
+
+// 월 이름을 반환하는 유틸
+export function getMonthName(yearAndMonth: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [year, monthNumber] = yearAndMonth.split("-");
+  const date = new Date();
+
+  // 해당 월로 세팅
+  date.setMonth(parseInt(monthNumber) - 1);
+
+  return new Date().getMonth() === parseInt(monthNumber) - 1
+    ? `${date.toLocaleString("default", { month: "long" })} (ongoing)`
+    : date.toLocaleString("default", { month: "long" });
+}
+
+// 지난 날짜 계산 유틸 함수
+export function calculatePastDate(days: number) {
+  const currentDate = new Date();
+  currentDate.setDate(currentDate.getDate() - days);
+  return currentDate;
+}
+
+// 남은 시간 계산 유틸 함수
+export function timeUntilMidnight(): { hours: number; minutes: number } {
+  const now = new Date();
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0); // Set to 12:00 AM (next day)
+
+  const diff = midnight.getTime() - now.getTime(); // Difference in milliseconds
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  return { hours, minutes };
+}
+
+// 날짜를 문자열로 변환하는 유틸 함수
+export const formatDateTime = (dateString: Date) => {
+  const dateTimeOptions: Intl.DateTimeFormatOptions = {
+    month: "short", // 월 이름 약어 (Jan, Feb, Mar, ...)
+    year: "numeric", // 연도 (2021)
+    day: "numeric", // 일 (1, 2, 3, ...)
+    hour: "numeric", // 시간 (1, 2, 3, ...)
+    minute: "numeric", // 분 (1, 2, 3, ...)
+    hour12: true, // AM/PM 표시 (true: 12시간제, false: 24시간제)
+  };
+
+  // 날짜 옵션
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    month: "short", // 월 이름 약어 (Jan, Feb, Mar, ...)
+    year: "numeric", // 연도 (2021)
+    day: "numeric", // 일 (1, 2, 3, ...)
+  };
+
+  // 시간 옵션
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: "numeric", // 시간 (1, 2, 3, ...)
+    minute: "numeric", // 분 (1, 2, 3, ...)
+    hour12: true, // AM/PM 표시 (true: 12시간제, false: 24시간제)
+  };
+  const formattedDateTime: string = new Date(dateString).toLocaleString("en-US", dateTimeOptions);
+  const formattedDate: string = new Date(dateString).toLocaleString("en-US", dateOptions);
+  const formattedTime: string = new Date(dateString).toLocaleString("en-US", timeOptions);
+
+  return { dateTime: formattedDateTime, dateOnly: formattedDate, timeOnly: formattedTime };
+};

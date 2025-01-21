@@ -11,3 +11,45 @@ export const TAX_PRICE = 0.1;
 
 // CopyRight 문자열 설정
 export const APP_COPYRIGHT = process.env.NEXT_PUBLIC_APP_COPYRIGHT || `CopyRight © 2025 ${config.APP_NAME}. All rights reserved.`;
+
+// 결제 방법 상수화
+export const AVAILABLE_PAYMENT_METHODS = [
+  {
+    name: "PayPal",
+    commission: 0,
+    isDefault: true,
+  },
+  {
+    name: "Stripe",
+    commission: 0,
+    isDefault: true,
+  },
+  {
+    name: "Cash On Delivery",
+    commission: 0,
+    isDefault: true,
+  },
+];
+
+export const DEFAULT_PAYMENT_METHOD = process.env.DEFAULT_PAYMENT_METHOD || "PayPal";
+
+export const AVAILABLE_DELIVERY_DATES = [
+  {
+    name: "Tomorrow",
+    daysToDeliver: 1,
+    shippingPrice: 12.9,
+    freeShippingMinPrice: 0,
+  },
+  {
+    name: "Next 3 Days",
+    daysToDeliver: 3,
+    shippingPrice: 6.9,
+    freeShippingMinPrice: 0, // 무료배송 최소금액
+  },
+  {
+    name: "Next 5 Days",
+    daysToDeliver: 5,
+    shippingPrice: 4.9,
+    freeShippingMinPrice: 35, // 무료배송 최소금액
+  },
+];
