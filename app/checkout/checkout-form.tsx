@@ -24,6 +24,8 @@ import { Label } from "@/components/ui/label";
 import { calculateFutureDate, formatDateTime, timeUntilMidnight } from "@/lib/utils";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { createOrder } from "@/lib/actions/order.actions";
+import { toast } from "@/hooks/use-toast";
 
 // 기본 배송 주소 설정(개발환경)
 const shippingAddressDefaultValues =
@@ -57,6 +59,7 @@ const CheckoutForm = () => {
     setDeliveryDateIndex, // 제품 리뷰 및 배송 날짜 설정에서 사용
     updateItem, // 제품 리뷰 및 배송 날짜 설정에서 사용
     removeItem, // 제품 리뷰 및 배송 날짜 설정에서 사용
+    clearCart, // 주문 성공 후 카트 비우기 (주문하기 부분)
   } = useCartStore();
 
   // 배송 주소, 결제 방법, 배송 날짜 선택 상태 관리
@@ -102,7 +105,33 @@ const CheckoutForm = () => {
 
   // 결제 요약 정보 > 주문하기 버튼 클릭
   const handlePlaceOrder = async () => {
-    // TODO: Place order
+    const response = await createOrder({
+      items, // 장바구니 아이템
+      shippingAddress, // 배송 주소
+      expectedDeliveryDate: calculateFutureDate(AVAILABLE_DELIVERY_DATES[deliveryDateIndex!].daysToDeliver), // 예상 배송 날짜
+      deliveryDateIndex, // 배송 날짜 인덱스
+      paymentMethod, // 결제 방법
+      itemsPrice, // 상품 가격
+      shippingPrice, // 배송비
+      taxPrice, // 세금
+      totalPrice, // 총 가격
+    });
+    // 주문이 실패하면 에러 메시지를 보여준다.
+    if (!response.success) {
+      toast({
+        description: response.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        description: response.message,
+        variant: "default",
+      });
+    }
+
+    // 주문 성공 후 카트를 비운다.
+    clearCart();
+    router.push(`/checkout/${response.data?.orderId}`);
   };
 
   // 결제 요약 정보 > 결제 방법 선택

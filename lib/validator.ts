@@ -79,3 +79,37 @@ export const CartSchema = z.object({
   deliveryDateIndex: z.optional(z.number()), // 배송 날짜 인덱스
   expectedDeliveryDate: z.optional(z.date()), // 예상 배송 날짜
 });
+
+// 주문 데이터 관리 (Place order)
+const MongoId = z.string().regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid MongoDB ID" });
+
+// order
+export const OrderInputSchema = z.object({
+  user: z.union([
+    MongoId, // 유저 ID
+    z.object({
+      name: z.string(),
+      email: z.string().email(),
+    }),
+  ]),
+  items: z.array(OrderItemSchema).min(1, "Order must contain at least one item"), // 주문 아이템
+  shippingAddress: ShippingAddressSchema, // 배송 주소
+  paymentMethod: z.string().min(1, "Payment method is required"), // 결제 수단
+  paymentResult: z
+    .object({
+      id: z.string(), // 결제 ID
+      status: z.string(), // 결제 상태
+      email_address: z.string(), // 이메일 주소
+      pricePaid: z.string(), // 결제 금액
+    })
+    .optional(),
+  itemsPrice: Price("Items price"), // 상품 가격
+  shippingPrice: Price("Shipping price"), // 배송비
+  taxPrice: Price("Tax price"), // 세금
+  totalPrice: Price("Total price"), // 총 가격
+  expectedDeliveryDate: z.date().refine((value) => value > new Date(), "Expected delivery date must be in the future"), // 예상 배송 날짜
+  isDelivered: z.boolean().default(false), // 배송 여부
+  deliveredAt: z.date().optional(), // 배송 날짜
+  isPaid: z.boolean().default(false), // 결제 여부
+  paidAt: z.date().optional(), // 결제 날짜
+});

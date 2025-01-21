@@ -1,7 +1,7 @@
 // types/index.ts
 
 import { UserInputSchema, UserSignInSchema, UserSignUpSchema } from "@/lib/user-validator";
-import { CartSchema, OrderItemSchema, ProductInputSchema, ShippingAddressSchema } from "@/lib/validator";
+import { CartSchema, OrderInputSchema, OrderItemSchema, ProductInputSchema, ShippingAddressSchema } from "@/lib/validator";
 import { z } from "zod";
 
 export type IProductInput = z.infer<typeof ProductInputSchema>;
@@ -25,6 +25,7 @@ export type Data = {
 };
 
 // 주문아이템, 카트에 대한 타입을 정의해 준다.
+export type IOrderInput = z.infer<typeof OrderInputSchema>;
 export type OrderItem = z.infer<typeof OrderItemSchema>;
 export type Cart = z.infer<typeof CartSchema>;
 export type ShippingAddress = z.infer<typeof ShippingAddressSchema>;
@@ -35,3 +36,5 @@ export type IUserSignIn = z.infer<typeof UserSignInSchema>;
 
 // 회원가입을 위한 타입을 선언한다.
 export type IUserSignUp = z.infer<typeof UserSignUpSchema>;
+
+// 주문 관리를 위한 타입 정의
