@@ -27,6 +27,7 @@ const orderSchema = new Schema<IOrder>(
         clientId: { type: String, required: true }, // 클라이언트 ID
         name: { type: String, required: true }, // 상품명
         slug: { type: String, required: true }, // 상품 슬러그
+        image: { type: String, required: true }, // 상품 이미지 <--- 추가됨
         category: { type: String, required: true }, // 상품 카테고리
         price: { type: Number, required: true }, // 상품 가격
         countInStock: { type: Number, required: true }, // 재고 수량

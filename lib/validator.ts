@@ -113,3 +113,19 @@ export const OrderInputSchema = z.object({
   isPaid: z.boolean().default(false), // 결제 여부
   paidAt: z.date().optional(), // 결제 날짜
 });
+
+// DB 설정의 유효성을 검증할 스키마 정의
+export const SettingInputSchema = z.object({
+  // 공통 설정
+  common: z.object({
+    defaultTheme: z.string().min(1, "Default theme is required").default("light"), // 기본 테마
+    defaultColor: z.string().min(1, "Default color is required").default("gold"), // 기본 색상
+  }),
+  // 사이트 설정
+  site: z.object({
+    url: z.string().url("Invalid URL format").min(1, "Site URL is required"), // 사이트 URL
+    name: z.string().min(1, "Site name is required"), // 사이트 이름
+    email: z.string().email("Invalid email format").min(1, "Site email is required"), // 관리자 이메일
+    phone: z.string().min(1, "Site phone is required"), // 관리자 전화번호
+  }),
+});

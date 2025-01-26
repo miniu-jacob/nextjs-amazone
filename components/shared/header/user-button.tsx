@@ -11,16 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logout } from "@/lib/actions/user.actions";
 import { auth } from "@/lib/auth";
-import { clog } from "@/lib/jlogger";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 export default async function UserButton() {
   const session = await auth();
-  // clog.info("[UserButton] userRole", userRole);
 
-  clog.info("[UserButton] session", session);
   return (
     <div className="flex items-center gap-2">
       <DropdownMenu>

@@ -84,19 +84,35 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     jwt: async ({ token, user, trigger, session }) => {
       if (user) {
-        if (!user.name) {
-          // 로그인 유저의 이름이 없는 경우 이메일 앞부분(user.email!.split("@")[0])을 추출해 이름으로 설정한다.
-          await connectToDatabase();
-          await User.findByIdAndUpdate(user.id, {
-            // user.email! 는 user.email이 null이나 undefined가 아님을 단언한다.
-            name: user.name || user.email!.split("@")[0],
-            role: "user",
+        // (a). DB 에 연결한다.
+        await connectToDatabase();
+
+        // (b). 사용자를 조회한다.
+        const existingUser = await User.findById(user.id);
+
+        // (c). 사용자가 없으면 기본값을 이메일에서 추출한다.
+        if (!existingUser) {
+          const defaultName = user.name || user.email?.split("@")[0];
+
+          // (d). 사용자가 없으므로 새로운 사용자를 생성한다.
+          const newUser = await User.create({
+            _id: user.id,
+            email: user.email,
+            name: defaultName,
+            role: "user", // 기본값은 사용자
+            image: user.image,
           });
+
+          // (e). 토큰에 사용자 데이터를 추가한다.
+          token.role = newUser.role;
+          token.name = newUser.name;
+        } else {
+          // 기존 사용자가 있다면 기존 사용자 role과 name을 설정한다.
+          token.role = existingUser.role || "user";
+          token.name = existingUser.name || user.email?.split("@")[0];
         }
 
-        // 토큰에 사용자 데이터 추가
-        token.name = user.name || user.email!.split("@")[0];
-        token.role = (user as { role: string }).role;
+        clog.info("[jwt] token", token);
       }
 
       // 세션 업데이트, trigger === 'update'의 의미는 세션이 업데이트될 때(예: 사용자가 자신의 이름을 변경한 경우) 호출된다.

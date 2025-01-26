@@ -7,7 +7,10 @@ import { AVAILABLE_DELIVERY_DATES, TAX_PRICE } from "../constants";
 import { connectToDatabase } from "../db";
 import { auth } from "../auth";
 import { OrderInputSchema } from "../validator";
-import Order from "../db/models/order.model";
+import Order, { IOrder } from "../db/models/order.model";
+import { paypal } from "../paypal";
+import { sendPurchaseReceipt } from "@/emails";
+import { revalidatePath } from "next/cache";
 
 type CalcDeliveryDateAndPriceProps = {
   items: OrderItem[];
@@ -38,8 +41,8 @@ export const calcDeliveryDateAndPrice = async ({ items, shippingAddress, deliver
     !shippingAddress || !deliveryDate // 배송 주속나 배송 날짜가 없으면 배송비 무료 (undefined)
       ? undefined
       : deliveryDate.freeShippingMinPrice > 0 && itemsPrice >= deliveryDate.freeShippingMinPrice // 무료배송 최소금액 이상이면 배송비 무료
-      ? 0
-      : deliveryDate.shippingPrice; // 기본 배송비
+        ? 0
+        : deliveryDate.shippingPrice; // 기본 배송비
 
   // 최종 금액 계산
   const totalPrice = round2(itemsPrice + (shippingPrice ? round2(shippingPrice) : 0) + (taxPrice ? round2(taxPrice) : 0));
@@ -112,3 +115,95 @@ export const createOrderFromCart = async (clientSideCart: Cart, userId: string) 
 
   return await Order.create(order);
 };
+
+// 주문 ID를 통해 주문 정보를 가져오는 함수를 정의한다.
+export async function getOrderById(orderId: string): Promise<IOrder> {
+  // DB에 연결한다.
+  await connectToDatabase();
+  // 주문 ID를 통해 주문 정보를 찾는다.
+  const order = await Order.findById(orderId);
+  // 주문 정보를 JSON 형태로 반환한다.
+  return JSON.parse(JSON.stringify(order));
+}
+
+export async function createPayPalOrder(orderId: string) {
+  // a). DB에 연결한다.
+  await connectToDatabase();
+
+  // b). 주문 데이터를 조회한다. try-catch 블록을 사용하여 오류를 처리한다.
+  try {
+    const order = await Order.findById(orderId);
+    if (order) {
+      // c). PayPal 주문을 생성한다. 매개변수로 총 가격을 전달한다.
+      const paypalOrder = await paypal.createOrder(order.totalPrice);
+
+      // d). 결제 정보를 업데이트한다.
+      order.paymentResult = {
+        id: paypalOrder.id, // PayPal 주문 ID
+        email_address: "", // 이메일 주소
+        status: "", // 상태
+        pricePaid: "0", // 지불한 가격
+      };
+      await order.save();
+
+      // e). PayPal 주문 ID를 반환한다.
+      return {
+        success: true,
+        message: "PayPal order created successfully",
+        data: paypalOrder.id, // PayPal 주문 ID
+      };
+    } else {
+      throw new Error("Order not found");
+    }
+  } catch (error) {
+    // 오류가 발생하면 오류 메시지를 반환한다.
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// 주문을 확정하는 함수를 정의한다.
+export async function approvePayPalOrder(
+  orderId: string, // 주문 ID
+  data: { orderID: string }, // PayPal 결제 ID
+) {
+  // a). DB 에 연결
+  await connectToDatabase();
+
+  try {
+    // b). 주문 정보를 조회한다. 주문은 populate() 함수를 사용하여 사용자 모델에서 이메일 주소를 가져온다.
+    const order = await Order.findById(orderId).populate("user", "email");
+    if (!order) throw new Error("Order not found");
+
+    // c). PayPal 결제를 승인한다. 매개변수로 결제 ID를 전달한다.
+    const captureData = await paypal.capturePayment(data.orderID);
+
+    // d). 예외 처리
+    if (!captureData || captureData.id !== order.paymentResult?.id || captureData.status !== "COMPLETED")
+      throw new Error("Error in paypal payment");
+
+    // e). 주문 데이터를 업데이트한다.
+    order.isPaid = true; // 결제 완료
+    order.paidAt = new Date(); // 결제 일자
+    order.paymentResult = {
+      id: captureData.id, // PayPal 주문 ID
+      status: captureData.status, // 상태
+      email_address: captureData.player.email_address, // 이메일 주소
+      pricePaid: captureData.purchase_units[0]?.payments?.captures[0]?.amount?.value, // 지불한 가격
+    };
+
+    // f). 저장
+    await order.save();
+
+    // g). 사용자의 이메일로 영수증을 전송한다.
+    await sendPurchaseReceipt({ order });
+
+    // h). 데이터 업데이트
+    revalidatePath(`/account/orders/${orderId}`);
+    return {
+      success: true,
+      message: "Your order has been successfully paid by PayPal",
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}

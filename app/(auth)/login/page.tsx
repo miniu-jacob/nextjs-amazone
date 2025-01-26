@@ -9,8 +9,8 @@ import { redirect } from "next/navigation";
 import CredentialsSignInForm from "./credentials-signin-form";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { findUserByEmail } from "@/lib/actions/user.actions";
-import { clog } from "@/lib/jlogger";
+// import { findUserByEmail } from "@/lib/actions/user.actions";
+// import { clog } from "@/lib/jlogger";
 import { GoogleSignInForm } from "./google-signin-form";
 
 export const metadata: Metadata = {
@@ -33,9 +33,9 @@ export default async function SignIn({ searchParams: props }: SignInProps) {
   if (session) redirect(callbackUrl);
 
   // 테스트 - 유저 정보 확인
-  const email = "jacob@miniu.kr";
-  const user = await findUserByEmail(email);
-  clog.info("[SignIn] user", user);
+  // const email = "jacob@miniu.kr";
+  // const user = await findUserByEmail(email);
+  // clog.info("[SignIn] session", session);
 
   // (4). 세션이 없다면, 로그인 페이지를 보여준다.
   return (
@@ -51,9 +51,9 @@ export default async function SignIn({ searchParams: props }: SignInProps) {
           </div>
           {/* GOOGLE FORM */}
           <SeparatorWithOr />
-            <div className='mt-4'>
-              <GoogleSignInForm />
-            </div>
+          <div className="mt-4">
+            <GoogleSignInForm />
+          </div>
         </CardContent>
       </Card>
       {/* 구분선 */}

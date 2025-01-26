@@ -998,6 +998,22 @@ const data: Data = {
       isPublished: true,
     },
   ],
+  // DB에 저장되는 설정들의 기본 값 정의
+  settings: [
+    {
+      common: {
+        defaultTheme: "light",
+        defaultColor: "gold",
+      },
+      site: {
+        name: "MiniMart",
+        url: "https://nextjs-amazone-nine.vercel.app",
+        email: "support@miniu.kr",
+        phone: "(+84) (0) 77-123-4567",
+        // copyright: "2000-2024, Next E-commerce.com, Inc.",
+      },
+    },
+  ],
 };
 
 export default data;

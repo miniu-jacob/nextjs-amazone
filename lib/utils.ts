@@ -145,3 +145,8 @@ export const formatDateTime = (dateString: Date) => {
 
   return { dateTime: formattedDateTime, dateOnly: formattedDate, timeOnly: formattedTime };
 };
+
+// 주문 이메일에 ID를 포맷팅하는 유틸
+export function formatId(id: string) {
+  return `..${id.substring(id.length - 6)}`;
+}
