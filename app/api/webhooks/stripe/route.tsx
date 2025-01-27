@@ -16,9 +16,6 @@ export const dynamic = "force-dynamic";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(req: NextRequest) {
-  // DB 연결 추가
-  await connectToDatabase();
-
   // 1). 이벤트를 검증한다. Stripe객체에서 제공하는 webhooks.constructEvent() 메소드를 사용한다.
   clog.log("[Stripe Webhook] Event received");
   const event = await stripe.webhooks.constructEvent(
@@ -26,6 +23,8 @@ export async function POST(req: NextRequest) {
     req.headers.get("stripe-signature") as string, // stripe-signature 헤더를 두번째 인자로 전달한다.
     process.env.STRIPE_WEBHOOK_SECRET as string, // stripe webhook secret을 세번째 인자로 전달한다.
   );
+
+  clog.log("[Stripe Webhook]:event type", event?.type);
 
   // 2). 이벤트 타입이 charge.succeeded인 경우(결제 성공)에만 처리한다.
   if (event.type === "charge.succeeded") {
@@ -36,7 +35,8 @@ export async function POST(req: NextRequest) {
     const pricePaidInCents = charge.amount;
 
     // 4). 주문을 DB에서 조회한다.
-    const order = await Order.findById(orderId).populate("user", "email");
+    await connectToDatabase();
+    const order = await Order.findById(orderId).populate("User", "email");
     if (order == null) {
       return new NextResponse("Bad Request", { status: 400 });
     }

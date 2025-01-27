@@ -40,6 +40,9 @@ export default function OrderPaymentForm({
     redirect(`/account/orders/${order._id}`);
   }
 
+  // clientSecret 로그 확인
+  clog.info("[OrderPaymentForm]: clientSecret", clientSecret); 
+
   // 2). 로딩 함수 정의(PayPal SDK 로딩 상태를 표시)
   function ShowLoadingState() {
     const [{ isPending, isRejected }] = usePayPalScriptReducer();

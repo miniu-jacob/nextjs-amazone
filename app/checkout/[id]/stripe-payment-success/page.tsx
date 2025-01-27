@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { getOrderById } from "@/lib/actions/order.actions";
+import { clog } from "@/lib/jlogger";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import Stripe from "stripe";
@@ -20,6 +21,7 @@ export default async function SuccessPage(props: { params: Promise<{ id: string 
     return notFound();
   }
   // 결제가 성공적으로 완료되었는지 확인한다. 완료가 아니라면 다시 결제 페이지로 리다이렉션한다.
+  clog.log("[Stripe Payment Success] Payment Intent", paymentIntent);
   const isSuccess = paymentIntent.status === "succeeded";
   if (!isSuccess) return redirect(`/checkout/${id}`);
 
