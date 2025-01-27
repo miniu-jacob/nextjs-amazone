@@ -6,6 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { clog } from "@/lib/jlogger";
 import { sendPurchaseReceipt } from "@/emails";
 
+// API 함수의 최대 실행 시간을 설정한다.
+export const maxDuration = 30;
+export const dynamic = "force-dynamic";
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(req: NextRequest) {
