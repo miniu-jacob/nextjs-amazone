@@ -5,6 +5,7 @@ import Order from "@/lib/db/models/order.model";
 import { NextRequest, NextResponse } from "next/server";
 import { clog } from "@/lib/jlogger";
 import { sendPurchaseReceipt } from "@/emails";
+import { connectToDatabase } from "@/lib/db";
 
 // API 함수의 최대 실행 시간을 설정한다.
 export const maxDuration = 30;
@@ -13,7 +14,11 @@ export const dynamic = "force-dynamic";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(req: NextRequest) {
+  // DB 연결 추가
+  await connectToDatabase();
+
   // 1). 이벤트를 검증한다. Stripe객체에서 제공하는 webhooks.constructEvent() 메소드를 사용한다.
+  clog.log("[Stripe Webhook] Event received");
   const event = await stripe.webhooks.constructEvent(
     await req.text(), // 요청의 본문을 문자열로 변환한다. 첫번째 인자로 전달한다.
     req.headers.get("stripe-signature") as string, // stripe-signature 헤더를 두번째 인자로 전달한다.
@@ -33,6 +38,8 @@ export async function POST(req: NextRequest) {
     if (order == null) {
       return new NextResponse("Bad Request", { status: 400 });
     }
+
+    clog.info("[Stripe Webhook] Order found", order);
 
     // 5) 결제 정보를 업데이트한다.
     order.isPaid = true;
