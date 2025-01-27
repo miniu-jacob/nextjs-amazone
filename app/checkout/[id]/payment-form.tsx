@@ -13,12 +13,22 @@ import ProductPrice from "@/components/shared/product/product-price";
 import { Button } from "@/components/ui/button";
 import { clog } from "@/lib/jlogger";
 
+// Stripe 결제을 위한 Stripe SDK 불러오기
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import StripeForm from "./stripe-form";
+
+// OrderPaymentForm 컴포넌트 외부에서 Stripe 클라이언트 결제를 위한 publishable key를 가져온다.
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
+
 export default function OrderPaymentForm({
   order, // 주문 내역
   paypalClientId, // 페이팔 클라이언트 ID
+  clientSecret, // Stripe 결제를 위한 client_secret 추가
 }: {
   order: IOrder;
   paypalClientId: string;
+  clientSecret: string | null;
   isAdmin: boolean;
 }) {
   const router = useRouter();
@@ -112,6 +122,17 @@ export default function OrderPaymentForm({
                   <PayPalButtons createOrder={handleCreatePayPalOrder} onApprove={handleApprovePayPalOrder} />
                 </PayPalScriptProvider>
               </div>
+            )}
+
+            {/* STRIPE를 선택한 경우 처리 */}
+            {!isPaid && paymentMethod === "Stripe" && clientSecret && (
+              <Elements
+                options={{
+                  clientSecret, // client_secret 추가
+                }}
+                stripe={stripePromise}>
+                <StripeForm priceInCents={Math.round(order.totalPrice * 100)} orderId={order._id} />
+              </Elements>
             )}
 
             {/* 비용지불되기 전이고 Cash On Deliver 를 선택했다면 버튼 보여주기  */}
