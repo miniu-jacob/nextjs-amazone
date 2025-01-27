@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     order.isPaid = true;
     order.paidAt = new Date();
     order.paymentResult = {
-      id: charge.id, // Stripe 결제 ID
+      id: event.id, // Stripe 결제 ID (charge.id 가 아니라 event.id 로 해야 한다.)
       status: "COMPLETED", // 결제 상태
       email_address: email!, // 결제 이메일
       pricePaid: (pricePaidInCents / 100).toFixed(2), // 결제 금액
