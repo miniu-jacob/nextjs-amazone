@@ -2,8 +2,7 @@
 
 import Stripe from "stripe";
 import Order from "@/lib/db/models/order.model";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import User from "@/lib/db/models/user.model";
+import "@/lib/db/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
 import { clog } from "@/lib/jlogger";
 import { sendPurchaseReceipt } from "@/emails";
