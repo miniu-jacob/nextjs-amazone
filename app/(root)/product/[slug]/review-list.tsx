@@ -254,8 +254,8 @@ export default function ReviewList({
         </div>
         {/* REVIEW AREA */}
         <div className="md:col-span-3 flex flex-col gap-3">
-          {reviews.map((review: IReviewDetails) => (
-            <Card key={review._id}>
+          {reviews.map((review: IReviewDetails, index) => (
+            <Card key={`${review._id}-${index}`}>
               <CardHeader>
                 <div className="flex-between mb-4">
                   <CardTitle>{review.title}</CardTitle>
