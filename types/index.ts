@@ -1,5 +1,6 @@
 // types/index.ts
 
+import { ReviewInputSchema } from "@/lib/review-validator";
 import { UserInputSchema, UserSignInSchema, UserSignUpSchema } from "@/lib/user-validator";
 import {
   CartSchema,
@@ -20,6 +21,12 @@ export type Data = {
   settings: ISettingInput[];
   users: IUserInput[];
   products: IProductInput[];
+  // 리뷰 데이터를 추가해 준다.
+  reviews: {
+    title: string;
+    rating: number;
+    comment: string;
+  }[];
   headerMenus: {
     name: string;
     href: string;
@@ -50,3 +57,15 @@ export type IUserSignUp = z.infer<typeof UserSignUpSchema>;
 
 // setting 타입
 export type ISettingInput = z.infer<typeof SettingInputSchema>;
+
+// 리뷰 타입 정의
+export type IReviewInput = z.infer<typeof ReviewInputSchema>;
+// 리뷰 상세 타입 정의 - 리뷰 상세 정보를 가져올 때 사용
+// 리뷰 상세 정보에는 아이디와, 생성일자, 사용자의 이름이 포함된다.
+export type IReviewDetails = IReviewInput & {
+  _id: string;
+  createdAt: string;
+  user: {
+    name: string;
+  };
+};

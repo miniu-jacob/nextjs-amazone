@@ -7,11 +7,13 @@ import ProductGallery from "@/components/shared/product/product-gallery";
 import ProductOptions from "@/components/shared/product/product-options";
 import ProductPrice from "@/components/shared/product/product-price";
 import ProductSlider from "@/components/shared/product/product-slider";
-import Rating from "@/components/shared/product/rating";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { getProductBySlug, getRelatedProductsByCategory } from "@/lib/actions/product.actions";
+import { auth } from "@/lib/auth";
 import { generateId, round2 } from "@/lib/utils";
+import ReviewList from "./review-list";
+import RatingSummary from "@/components/shared/product/rating-summary";
 
 // (1). 메타데이터를 생성하는 함수를 정의한다.
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
@@ -46,6 +48,9 @@ export default async function ProductDetails(props: {
   const params = await props.params;
   const { slug } = params;
 
+  // (A). 리뷰 작성/수정을 위해 세션 정보를 가져온다.
+  const session = await auth();
+
   // (d). slug를 통해 상품 정보를 조회한다.
   const product = await getProductBySlug(slug);
 
@@ -75,11 +80,18 @@ export default async function ProductDetails(props: {
               </p>
               <h1 className="font-bold text-lg lg:text-xl">{product.name}</h1>
               {/* 별점 */}
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <span>{product.avgRating.toFixed(1)}</span>
                 <Rating rating={product.avgRating} />
                 <span>{product.numReviews} ratings</span>
-              </div>
+              </div> */}
+              <RatingSummary
+                avgRating={product.avgRating}
+                numReviews={product.numReviews}
+                ratingDistribution={product.ratingDistribution}
+                asPopover
+              />
+
               <Separator />
               {/* 가격 정보 */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -139,11 +151,19 @@ export default async function ProductDetails(props: {
           </div>
         </div>
       </section>
-      {/* 두 번째 섹션 */}
+      {/* 리뷰 섹션 추가 */}
+      <section className="mt-10">
+        <h2 className="h2-bold mb-2" id="reviews">
+          Customer Reviews
+        </h2>
+        <ReviewList product={product} userId={session?.user?.id} />
+      </section>
+
+      {/* 기존 두 번째 섹션 */}
       <section className="mt-10">
         <ProductSlider products={relatedProducts.data} title={`Best Sellers in ${product.category}`} />
       </section>
-      {/* 세 번째 섹션 - Browsing history */}
+      {/* 기존 세 번째 섹션 - Browsing history */}
       <section>
         <BrowsingHistoryList className="mt-10" />
       </section>

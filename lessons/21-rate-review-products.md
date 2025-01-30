@@ -621,7 +621,7 @@ export default function ReviewList({
     })
     if (!res.success)
       return toast({
-        variant: 'destructive',
+        variant: 'destructive'
         description: res.message,
       })
     setOpen(false)

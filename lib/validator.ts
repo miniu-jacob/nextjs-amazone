@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { formatNumberWithDecimal } from "./utils";
+import { ReviewInputSchema } from "./review-validator";
 
 // 가격 정보를 따로 정의한다.
 const Price = (field: string) =>
@@ -36,7 +37,7 @@ export const ProductInputSchema = z.object({
   numReviews: z.coerce.number().int().nonnegative("Number of reviews must be a non-negative number"),
   // 별점 분포
   ratingDistribution: z.array(z.object({ rating: z.number(), count: z.number() })).max(5),
-  reviews: z.array(z.string()).default([]),
+  reviews: z.array(ReviewInputSchema).default([]),
   // 총 판매 수량
   numSales: z.coerce.number().int().nonnegative("Number of sales must be a non-negative number"),
 });
