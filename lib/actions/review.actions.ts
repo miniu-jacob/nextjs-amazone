@@ -9,7 +9,6 @@ import Review, { IReview } from "../db/models/review.model";
 import mongoose from "mongoose";
 import Product from "../db/models/product.model";
 import { PAGE_SIZE } from "../constants";
-import { clog } from "../jlogger";
 import { IReviewDetails } from "@/types";
 import { formatError } from "../utils";
 import { revalidatePath } from "next/cache";
@@ -118,7 +117,6 @@ export async function getReviews({
   limit?: number;
   page: number;
 }) {
-  clog.log("[getReviews] getReviews function called");
   // 3.2). Page limit 를 설정한다.
   limit = limit || PAGE_SIZE;
   // 3.3). DB 연결 후 건너뛸 데이터 설정
@@ -135,7 +133,6 @@ export async function getReviews({
     }) // 사용자 이름을 가져온다.
     .skip(skipAmount) // 건너뛸 데이터 설정
     .limit(limit); // 페이지 단위로 데이터를 가져온다.
-  clog.info("[getReviews] reviews", reviews);
 
   // 3.5). 제품에 대한 전체 리뷰 수를 계산한다. (총 리뷰 수를 보여준다.)
   const reviewCount = await Review.countDocuments({ product: productId });
