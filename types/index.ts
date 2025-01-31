@@ -1,7 +1,7 @@
 // types/index.ts
 
 import { ReviewInputSchema } from "@/lib/review-validator";
-import { UserInputSchema, UserSignInSchema, UserSignUpSchema } from "@/lib/user-validator";
+import { UserInputSchema, UserNameSchema, UserSignInSchema, UserSignUpSchema } from "@/lib/user-validator";
 import {
   CartSchema,
   OrderInputSchema,
@@ -52,6 +52,9 @@ export type IUserSignIn = z.infer<typeof UserSignInSchema>;
 
 // 회원가입을 위한 타입을 선언한다.
 export type IUserSignUp = z.infer<typeof UserSignUpSchema>;
+
+// 유저 이름을 변경하기 위한 타입 선언
+export type IUserName = z.infer<typeof UserNameSchema>;
 
 // 주문 관리를 위한 타입 정의
 

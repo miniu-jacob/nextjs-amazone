@@ -2,8 +2,8 @@
 "use server";
 
 import bcrypt from "bcryptjs";
-import { IUserSignIn, IUserSignUp } from "@/types";
-import { signIn, signOut } from "../auth";
+import { IUserName, IUserSignIn, IUserSignUp } from "@/types";
+import { auth, signIn, signOut } from "../auth";
 import { redirect } from "next/navigation";
 import { connectToDatabase } from "../db";
 import User from "../db/models/user.model";
@@ -68,3 +68,23 @@ export async function registerUser(userSignUp: IUserSignUp) {
 export const SignWithGoogle = async () => {
   await signIn("google");
 };
+
+// (6). 유저 정보를 업데이트하는 서버 액션
+export async function updateUserName(user: IUserName) {
+  try {
+    // DB 연결 후 사용자 세션을 가져온다.
+    await connectToDatabase();
+    const session = await auth();
+    const currentUser = await User.findById(session?.user?.id);
+    if (!currentUser) throw new Error("User not found");
+
+    // 유저 이름을 업데이트하고 저장한다.
+    currentUser.name = user.name;
+    const updatedUser = await currentUser.save(); // 유저 정보 저장
+
+    // 결과를 리턴한다.
+    return { success: true, message: "User updated successfully", data: JSON.parse(JSON.stringify(updatedUser)) };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}

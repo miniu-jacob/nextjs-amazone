@@ -18,6 +18,11 @@ const UserRole = z
     message: "Invalid role. Please Input right roles.",
   });
 
+// 유저 이름 변경을 위한 스키마
+export const UserNameSchema = z.object({
+  name: UserName,
+});
+
 export const UserInputSchema = z.object({
   name: UserName,
   email: Email,
