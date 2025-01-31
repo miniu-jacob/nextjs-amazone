@@ -2,9 +2,28 @@
 
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import qs from "query-string";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+// ✅ URL 파라미터를 변환하는 유틸 정의
+export function formUrlQuery({ params, key, value }: { params: string; key: string; value: string | null }) {
+  // a.1). URL 파라미터를 객체로 변환한다.
+  const currentUrl = qs.parse(params);
+
+  // a.2). 특정 키를 가진 URL 파라미터의 값을 입력받은 value로 변경한다.
+  currentUrl[key] = value;
+
+  // a.3). 변경된 쿼리 객체를 URL로 변환하여 반환한다.
+  return qs.stringifyUrl(
+    {
+      url: window.location.pathname, // 현재 URL 경로를 유지한다.
+      query: currentUrl, // 변경된 URL 파라미터 객체를 적용한다.
+    },
+    { skipNull: true }, // null 값은 URL 파라미터에서 제외한다.
+  );
 }
 
 // 숫자를 문자열로 변환한 뒤, 소수점 자릿수를 항상 2자리로 맞추는 유틸리티

@@ -117,11 +117,13 @@ const CheckoutForm = () => {
       totalPrice, // 총 가격
     });
     // 주문이 실패하면 에러 메시지를 보여준다.
-    if (!response.success) {
+
+    if (!response.success || !response.data?.orderId) {
       toast({
         description: response.message,
         variant: "destructive",
       });
+      return;
     } else {
       toast({
         description: response.message,

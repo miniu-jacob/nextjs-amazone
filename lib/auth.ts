@@ -57,7 +57,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: { email: { type: "email" }, password: { type: "password" } },
       async authorize(credentials) {
         // (1). DB 연결 및 확인
-        clog.log("[CredentialsProvider] authorize function called");
         await connectToDatabase();
         if (credentials === null) return null;
 

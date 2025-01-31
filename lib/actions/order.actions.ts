@@ -3,7 +3,7 @@
 
 import { Cart, OrderItem, ShippingAddress } from "@/types";
 import { formatError, round2 } from "../utils";
-import { AVAILABLE_DELIVERY_DATES, TAX_PRICE } from "../constants";
+import { AVAILABLE_DELIVERY_DATES, PAGE_SIZE, TAX_PRICE } from "../constants";
 import { connectToDatabase } from "../db";
 import { auth } from "../auth";
 import { OrderInputSchema } from "../validator";
@@ -20,6 +20,8 @@ type CalcDeliveryDateAndPriceProps = {
 
 export const calcDeliveryDateAndPrice = async ({ items, shippingAddress, deliveryDateIndex }: CalcDeliveryDateAndPriceProps) => {
   // 상품의 개별 가격(item.price) 과 수량 (item.quantity) 을 곱하여 총 가격을 계산한다.
+  // lib/actions/order.actions.ts
+  "use server";
   // 초기값은 0으로 설정하기 위해 reduce() 함수의 두 번째 인자로 0을 전달한다.
   const itemsPrice = round2(items.reduce((acc, item) => acc + item.price * item.quantity, 0));
 
@@ -205,5 +207,36 @@ export async function approvePayPalOrder(
     };
   } catch (error) {
     return { success: false, message: formatError(error) };
+  }
+}
+
+// 사용자가 주문한 내역을 가져오는 함수를 정의한다.
+export async function getMyOrders({ limit, page }: { limit?: number; page: number }) {
+  // limit에 대한 기본값 설졍
+  limit = limit || PAGE_SIZE; // 기본값은 9로 설정하였다. (lib/constants.ts 참조)
+  // DB에 연결하고 사용자를 인증한다.
+  await connectToDatabase();
+
+  const session = await auth();
+  if (!session) throw new Error("User is not authenticated");
+
+  // 페이징 처리를 위한 limit와 skip 값을 계산한다.
+  const skipAmount = (Number(page) - 1) * limit; // limit가 undefined 일 수 있기 때문에 기본값을 위에 설정
+
+  // 주문을 조회한다. 사용자 ID로 조회하고, 최신 주문이 먼저 나오도록 정렬한다.
+  const orders = await Order.find({
+    user: session?.user?.id, // 사용자 ID로 조회
+  })
+    .sort({ createdAt: "desc" }) // 최신 주문이 먼저 나오도록 정렬
+    .skip(skipAmount) // skipAmount 만큼 건너뛴다.
+    .limit(limit); // limit 만큼 조회한다.
+
+  // 전체 주문 개수를 조회한다.
+  const ordersCount = await Order.countDocuments({ user: session?.user?.id });
+
+  // 주문 목록과 전체 주문 개수를 반환한다.
+  return {
+    data: JSON.parse(JSON.stringify(orders)), // 주문 목록
+    totalPages: Math.ceil(ordersCount / limit), // 전체 페이지 수
   }
 }

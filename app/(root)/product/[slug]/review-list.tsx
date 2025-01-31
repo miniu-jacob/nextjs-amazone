@@ -14,7 +14,6 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { createUpdateReview, getReviewByProductId, getReviews } from "@/lib/actions/review.actions";
 import { IProduct } from "@/lib/db/models/product.model";
-import { clog } from "@/lib/jlogger";
 import { ReviewInputSchema } from "@/lib/review-validator";
 import { IReviewDetails } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -91,7 +90,6 @@ export default function ReviewList({
     if (inView) {
       loadReviews();
     }
-    clog.info("[ReviewList] reviews:", reviews);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView]);
