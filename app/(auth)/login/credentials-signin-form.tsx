@@ -12,7 +12,6 @@ import { toast } from "@/hooks/use-toast";
 import { signInWithCredentials } from "@/lib/actions/user.actions";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { clog } from "@/lib/jlogger";
 import { Button } from "@/components/ui/button";
 import { config } from "@/lib/app.config";
 import Link from "next/link";
@@ -44,7 +43,6 @@ export default function CredentialsSignInForm() {
         email: data.email,
         password: data.password,
       });
-      clog.info("[CredentialsSignInForm] onSubmit", data);
 
       // 로그인 성공 후 callbackUrl로 리다이렉션한다.
       redirect(callbackUrl);
