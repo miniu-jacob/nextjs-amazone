@@ -169,3 +169,46 @@ export const formatDateTime = (dateString: Date) => {
 export function formatId(id: string) {
   return `..${id.substring(id.length - 6)}`;
 }
+
+type FilterParams = {
+  q?: string;
+  category?: string;
+  tag?: string;
+  price?: string;
+  rating?: string;
+  sort?: string;
+  page?: string;
+};
+
+// ✅ 검색 페이지에서 URL 파라미터를 변경하는 유틸 정의
+export const getFilterUrl = ({
+  params,
+  category,
+  tag,
+  sort,
+  price,
+  rating,
+  page,
+}: {
+  params: FilterParams;
+  tag?: string;
+  category?: string;
+  sort?: string;
+  price?: string;
+  rating?: string;
+  page?: string;
+}) => {
+  // 기존의 URL 파라미터를 가져온다.
+  const newParams = { ...params };
+
+  // 새로운 필터 값이 있다면 복사한 URL 파라미터를 변경한다.
+  if (category) newParams.category = category;
+  if (tag) newParams.tag = toSlug(tag);
+  if (price) newParams.price = price;
+  if (rating) newParams.rating = rating;
+  if (page) newParams.page = page;
+  if (sort) newParams.sort = sort;
+
+  // 변경된 URL 파라미터를 URL로 변환하여 반환한다.
+  return `/search?${new URLSearchParams(newParams).toString()}`;
+};

@@ -100,3 +100,127 @@ export async function getRelatedProductsByCategory({
     totalPages: Math.ceil(productsCount / limit),
   };
 }
+
+// 검색에 사용하는 필터에 따른 상품을 조회하는 서버 액션 정의
+export async function getAllProducts({
+  query,
+  limit,
+  page,
+  category,
+  tag,
+  price,
+  rating,
+  sort,
+}: {
+  query: string;
+  category: string;
+  tag: string;
+  limit?: number;
+  page: number;
+  price?: string;
+  rating?: string;
+  sort?: string;
+}) {
+  // a). limit 기본 값 설정
+  limit = limit || PAGE_SIZE;
+
+  // b). DB 에 연결한다.
+  await connectToDatabase();
+
+  // c). 쿼리에 적용할 검색 조건을 설정한다.
+  const queryFilter =
+    query && query !== "all"
+      ? {
+          name: { $regex: query, $options: "i" },
+        }
+      : {};
+
+  // d). 카테고리와 태그에 적용할 필터 조건을 설정한다.
+  const categoryFilter = category && category !== "all" ? { category } : {};
+  const tagFilter = tag && tag !== "all" ? { tags: tag } : {};
+
+  // e). 별점/가격에 적용할 필터 조건을 설정한다.
+  const ratingFilter =
+    rating && rating !== "all"
+      ? {
+          avgRating: { $gte: Number(rating) }, // 별점 이상
+        }
+      : {};
+  const priceFilter =
+    price && price !== "all"
+      ? {
+          price: {
+            $gte: Number(price.split("-")[0]), // 가격 이상
+            $lte: Number(price.split("-")[1]), // 가격 이하
+          },
+        }
+      : {};
+  // f). 정렬 조건을 설정한다.
+  const order: Record<string, 1 | -1> =
+    sort === "best-selling"
+      ? { numSales: -1 }
+      : sort === "price-low-to-high" // 가격 낮은 순
+        ? { price: 1 }
+        : sort === "price-high-to-low" // 가격 높은 순
+          ? { price: -1 }
+          : sort === "avg-customer-review" // 별점 높은 순
+            ? { avgRating: -1 } // 별점 높은 순
+            : { _id: -1 }; // 최신순}
+
+  // g). 발행된 상품만 조회한다.
+  const isPublished = { isPublished: true };
+
+  // h). 모든 조건을 합쳐서 상품을 조회한다.
+  const products = await Product.find({
+    ...isPublished, // 발행된 상품만 조회
+    ...queryFilter, // 검색어 조건
+    ...tagFilter, // 태그 조건
+    ...categoryFilter, // 카테고리 조건
+    ...priceFilter, // 가격 조건
+    ...ratingFilter, // 별점 조건
+  })
+    .sort(order) // 조건에 따라 정렬
+    .skip(limit * (Number(page) - 1)) // 페이지네이션을 위한 스킵
+    .limit(limit) // 조회할 개수
+    .lean();
+
+  // i). 상품의 개수를 조회한다.
+  const countProducts = await Product.countDocuments({
+    ...isPublished, // 발행된 상품만 조회??? -> 확인 필요함
+    ...queryFilter,
+    ...tagFilter,
+    ...categoryFilter,
+    ...priceFilter,
+    ...ratingFilter,
+  });
+
+  // 결과 리턴
+  return {
+    products: JSON.parse(JSON.stringify(products)) as IProduct[],
+    totalPages: Math.ceil(countProducts / limit), // 전체 페이지 수
+    totalProducts: countProducts, // 전체 상품 수
+    from: limit * (Number(page) - 1) + 1, // 현재 페이지의 첫 상품 번호
+    to: limit * (Number(page) - 1) + products.length, // 현재 페이지의 마지막 상품 번호
+  };
+}
+
+// 태그를 가져오는 함수를 정의한다.
+export async function getAllTags() {
+  const tags = await Product.aggregate([
+    { $unwind: "$tags" },
+    { $group: { _id: null, uniqueTags: { $addToSet: "$tags" } } },
+    { $project: { _id: 0, uniqueTags: 1 } },
+  ]);
+
+  // 결과를 리턴한다.
+  return (
+    (tags[0]?.uniqueTags
+      .sort((a: string, b: string) => a.localeCompare(b))
+      .map((x: string) =>
+        x
+          .split("-")
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" "),
+      ) as string[]) || []
+  );
+}

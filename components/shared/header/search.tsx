@@ -2,19 +2,18 @@
 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAllCategories } from "@/lib/actions/product.actions";
 import { config } from "@/lib/app.config";
 import { SearchIcon } from "lucide-react";
 
 export default async function Search() {
-  const categories = ["men", "women", "kids", "accessories"];
+  // const categories = ["men", "women", "kids", "accessories"];
+  const categories = await getAllCategories();
   return (
     // TODO: search 컴포넌트 만들기
-    <form
-      action={"/search"}
-      method="GET"
-      className="flex items-stretch h-10">
+    <form action={"/search"} method="GET" className="flex items-stretch h-10">
       <Select name="category">
-      <SelectTrigger
+        <SelectTrigger
           className="w-auto h-full dark:border-gray-200 bg-gray-100 text-black border-r
         rounded-r-none rounded-l-md rtl:rounded-r-md rtl:rounded-l-none">
           <SelectValue placeholder={"All"} />

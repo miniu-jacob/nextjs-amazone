@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+// 검색에서 모바일 화면에서 사용한다.
 function useDeviceType() {
   // (1). 디바이스 타입을 저장할 상태를 정의한다.
   const [deviceType, setDeviceType] = useState("unknown");

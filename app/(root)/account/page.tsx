@@ -15,7 +15,7 @@ export default function AccountPage() {
   return (
     <div>
       {/* PAGE TITLE */}
-      <h1>{PAGE_TITLE}</h1>
+      <h1 className="h1-bold py-4">{PAGE_TITLE}</h1>
       {/* NAVIGATION CARDS UI */}
       <div className="grid md:grid-cols-3 gap-4 items-stretch">
         {/* 주문 관리 */}
