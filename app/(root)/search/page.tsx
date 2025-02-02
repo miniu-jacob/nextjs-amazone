@@ -40,6 +40,37 @@ const prices = [
   { name: "$51 to $1000", value: "51-1000" },
 ];
 
+// 메타데이터를 설정해 준다.
+export async function generateMetadata(props: {
+  searchParams: Promise<{
+    q: string;
+    category: string;
+    tag: string;
+    price: string;
+    rating: string;
+    sort: string;
+    page: string;
+  }>;
+}) {
+  const searchParams = await props.searchParams;
+  const { q = "all", category = "all", tag = "all", price = "all", rating = "all" } = searchParams;
+
+  // 검색 조건 결과에 따른 값 리턴
+  if ((q !== "all" && q !== "") || category !== "all" || tag !== "all" || price !== "all" || rating !== "all") {
+    return {
+      title: `Search ${q !== "all" ? q : ""}
+        ${category !== "all" ? ` : Category ${category}` : ""}
+        ${tag !== "all" ? ` : Tag ${tag}` : ""}
+        ${price !== "all" ? ` : Price ${price}` : ""}
+        ${rating !== "all" ? ` : Rating ${rating}` : ""}`,
+    };
+  } else {
+    return {
+      title: "Search Products",
+    };
+  }
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   // 1). 검색 필터값을 받아온다.
   const newSearchParams = await searchParams;
