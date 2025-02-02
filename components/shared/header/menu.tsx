@@ -1,26 +1,42 @@
 // components/shared/header/menu.tsx
 
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import CartButton from "./cart-button";
+import ThemeSwitcher from "./theme-switcher";
 import UserButton from "./user-button";
+import { EllipsisVertical } from "lucide-react";
 
-export default function Menu() {
+// export default function Menu() {
+const Menu = ({ forAdmin = false }: { forAdmin?: boolean }) => {
   return (
     <div className="flex justify-end">
-      <nav className="flex gap-3 w-full">
-        {/* <Link href={"/login"} className="header-button flex items-center">
-          Hello, Sign in
-        </Link> */}
+      {/* DESKTOP MENU */}
+      <nav className="md:flex gap-3 hidden w-full">
+        <ThemeSwitcher />
         <UserButton />
-
-        {/* 카트 Link 대신 CartButton 컴포넌트 랜더링 */}
-        <CartButton />
-        {/* <Link href={"/cart"} className="header-button">
-          <div className="flex items-end">
-            <ShoppingCartIcon className="h-6 w-6 mr-1" />
-            Cart
-          </div>
-        </Link> */}
+        {forAdmin ? null : <CartButton />}
+      </nav>
+      {/* MOBILE MENU */}
+      <nav className="md:hidden">
+        <Sheet>
+          <SheetTrigger className="align-middle header-button">
+            <EllipsisVertical className="h-6 w-6" />
+          </SheetTrigger>
+          <SheetContent className="bg-black text-white flex flex-col items-start">
+            <SheetHeader className="w-full">
+              <div className="flex items-center justify-between">
+                <SheetTitle className="text-white ">Site Menu</SheetTitle>
+                <SheetDescription />
+              </div>
+            </SheetHeader>
+            <ThemeSwitcher />
+            <UserButton />
+            <CartButton />
+          </SheetContent>
+        </Sheet>
       </nav>
     </div>
   );
-}
+};
+
+export default Menu;

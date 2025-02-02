@@ -197,7 +197,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </div>
 
           {/* 상품 결과 */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {data.products.length === 0 && <div>No product found</div>}
             {data.products.map((product: IProduct) => (
               <ProductCard key={product._id} product={product} />
