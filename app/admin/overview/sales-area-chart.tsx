@@ -54,16 +54,22 @@ const STROKE_COLORS: { [key: string]: { [key: string]: string } } = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function SalesAreaChart({ data }: { data: any[] }) {
   const { theme } = useTheme();
-  const { color } = useColorStore(theme);
+  const { cssColors, color } = useColorStore(theme);
 
   return (
     <ResponsiveContainer width={"100%"} height={400}>
       <AreaChart data={data}>
         <CartesianGrid />
-        <XAxis dataKey="date" tick={<CustomXAxisTick />} interval={3} />
+        <XAxis dataKey="date" tick={<CustomXAxisTick />} interval={0} />
         <YAxis fontSize={12} tickFormatter={(value: number) => `$${value}`} />
         <Tooltip content={<CustomTooltip />} />
-        <Area type={"monotone"} dataKey={"totalSales"} stroke={STROKE_COLORS[color.name][theme || "light"]} />
+        <Area
+          type={"monotone"}
+          dataKey={"totalSales"}
+          stroke={STROKE_COLORS[color.name][theme || "light"]}
+          fill={`hsl(${cssColors["--primary"]})`}
+          fillOpacity={0.8}
+        />
       </AreaChart>
     </ResponsiveContainer>
   );

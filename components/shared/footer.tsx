@@ -32,7 +32,7 @@ export default function Footer() {
         </div>
         {/* Address */}
         <div className="mt-8 flex justify-center text-sm text-gray-400">
-          10 - 12 Hưng Gia 3, Khu đô thị Phú Mỹ Hưng, Quận 7, Hồ Chí Minh 700000 Vietnam
+          123, Khu đô thị Phú Mỹ Hưng, Quận 7, Hồ Chí Minh 700000 Vietnam
         </div>
       </div>
     </footer>

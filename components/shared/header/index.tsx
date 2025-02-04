@@ -8,13 +8,12 @@ import data from "@/lib/data";
 import Menu from "./menu";
 import { getAllCategories } from "@/lib/actions/product.actions";
 import Sidebar from "./sidebar";
-import { auth } from "@/lib/auth";
 
 export default async function Header() {
   // 전체 카테고리를 가져오는 서버 액션 호출
   // 관리자인지 체크해서 메뉴에 forAdmin 전달
-  const session = await auth();
-  const isAdmin = session?.user?.role === "admin";
+  // const session = await auth();
+  // const isAdmin = session?.user?.role === "admin";
   const categories = await getAllCategories();
   return (
     <header className="bg-black text-white">
@@ -32,7 +31,7 @@ export default async function Header() {
             <Search />
           </div>
 
-          <Menu forAdmin={isAdmin} />
+          <Menu />
         </div>{" "}
         {/* 로고와 검색 박스 영역 끝 */}
         {/* SEARCH BOX - MOBILE */}

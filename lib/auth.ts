@@ -98,7 +98,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             _id: user.id,
             email: user.email,
             name: defaultName,
-            role: "user", // 기본값은 사용자
+            role: "admin", // 기본값은 사용자
             image: user.image,
           });
 

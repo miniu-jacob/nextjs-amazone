@@ -14,7 +14,6 @@ import { revalidatePath } from "next/cache";
 import { DateRange } from "react-day-picker";
 import Product from "../db/models/product.model";
 import User from "../db/models/user.model";
-import { clog } from "../jlogger";
 
 type CalcDeliveryDateAndPriceProps = {
   items: OrderItem[];
@@ -292,7 +291,8 @@ export async function getOrderSummary(date: DateRange) {
   const monthlySales = await Order.aggregate([
     { $match: { createdAt: { $gte: sixMonthEarlierDate } } },
     { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, totalSales: { $sum: "$totalPrice" } } },
-    { $project: { _id: 0, label: "$_id", value: "$totalSales" } },
+    // { $project: { _id: 0, label: "$_id", value:  "$totalSales" } }, <-- 기존 코드 > 소수점 2자리
+    { $project: { _id: 0, label: "$_id", value: { $round: ["$totalSales", 2] } } },
     { $sort: { label: -1 } },
   ]);
 
@@ -301,8 +301,6 @@ export async function getOrderSummary(date: DateRange) {
 
   // 최신 주문 리스트를 가져온다.
   const latestOrders = await Order.find().populate("user", "name").sort({ createdAt: "desc" }).limit(PAGE_SIZE);
-
-  clog.info("[getOrderSummary] monthlySales", monthlySales);
 
   return {
     ordersCount, // 주문 수
