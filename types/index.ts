@@ -58,6 +58,16 @@ export type IUserName = z.infer<typeof UserNameSchema>;
 
 // 주문 관리를 위한 타입 정의
 
+// 대시보드 주문 리스트 타입 확장 관리
+export type IOrderList = IOrderInput & {
+  _id: string;
+  user: {
+    name: string;
+    email: string;
+  };
+  createdAt: Date;
+};
+
 // setting 타입
 export type ISettingInput = z.infer<typeof SettingInputSchema>;
 

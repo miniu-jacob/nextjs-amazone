@@ -1,7 +1,7 @@
 // lib/actions/order.actions.ts
 "use server";
 
-import { Cart, OrderItem, ShippingAddress } from "@/types";
+import { Cart, IOrderList, OrderItem, ShippingAddress } from "@/types";
 import { formatError, round2 } from "../utils";
 import { AVAILABLE_DELIVERY_DATES, PAGE_SIZE, TAX_PRICE } from "../constants";
 import { connectToDatabase } from "../db";
@@ -11,6 +11,10 @@ import Order, { IOrder } from "../db/models/order.model";
 import { paypal } from "../paypal";
 import { sendPurchaseReceipt } from "@/emails";
 import { revalidatePath } from "next/cache";
+import { DateRange } from "react-day-picker";
+import Product from "../db/models/product.model";
+import User from "../db/models/user.model";
+import { clog } from "../jlogger";
 
 type CalcDeliveryDateAndPriceProps = {
   items: OrderItem[];
@@ -238,5 +242,144 @@ export async function getMyOrders({ limit, page }: { limit?: number; page: numbe
   return {
     data: JSON.parse(JSON.stringify(orders)), // 주문 목록
     totalPages: Math.ceil(ordersCount / limit), // 전체 페이지 수
-  }
+  };
+}
+
+// 대시보드에서 사용하는 주문 통계 목록을 조회하는 함수 정의 - get orders by user
+export async function getOrderSummary(date: DateRange) {
+  // DB 연결
+  await connectToDatabase();
+
+  // 주어진 날짜 범위(date.from - date.to) 내의 주문 수 계산
+  const ordersCount = await Order.countDocuments({
+    createdAt: { $gte: date.from, $lte: date.to },
+  });
+
+  // 주어진 날짜 범위내에 등록된 상품 수 계산
+  const productsCount = await Product.countDocuments({
+    createdAt: { $gte: date.from, $lte: date.to },
+  });
+
+  // 해당 기간 동안 가입한 사용자 수 계산
+  const usersCount = await User.countDocuments({
+    createdAt: { $gte: date.from, $lte: date.to },
+  });
+
+  // 총 매출을 계산한다.
+  const totalSalesResult = await Order.aggregate([
+    // 특정 기간(WHERE) -> 즉 $match를 사용한다.
+    { $match: { createdAt: { $gte: date.from, $lte: date.to } } },
+    // 그룹화한다. -> $group을 사용한다.
+    { $group: { _id: null, sales: { $sum: "$totalPrice" } } },
+    // 원하는 필드만 선택한다. -> $project를 사용한다.
+    // totalSales 값이 없는 경우에는 0으로 반환한다. -> $ifNull를 사용한다.
+    // ifNull 연산자는 첫 번째 값이 null이면 두 번째 값으로 대체한다.
+    { $project: { totalSales: { $ifNull: ["$sales", 0] } } },
+  ]);
+
+  // 최종 매출을 계산한다.
+  const totalSales = totalSalesResult[0] ? totalSalesResult[0].totalSales : 0;
+
+  // 최근 6개월 간 월별 매출(monthlySales) 계산
+  const today = new Date();
+  const sixMonthEarlierDate = new Date(
+    today.getFullYear(),
+    today.getMonth() - 5, // 6개월 전
+    1, // 1일
+  );
+
+  // 월별 매출을 계산한다.
+  const monthlySales = await Order.aggregate([
+    { $match: { createdAt: { $gte: sixMonthEarlierDate } } },
+    { $group: { _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } }, totalSales: { $sum: "$totalPrice" } } },
+    { $project: { _id: 0, label: "$_id", value: "$totalSales" } },
+    { $sort: { label: -1 } },
+  ]);
+
+  const topSalesCategories = await getTopSalesCategories(date);
+  const topSalesProducts = await getTopSalesProducts(date);
+
+  // 최신 주문 리스트를 가져온다.
+  const latestOrders = await Order.find().populate("user", "name").sort({ createdAt: "desc" }).limit(PAGE_SIZE);
+
+  clog.info("[getOrderSummary] monthlySales", monthlySales);
+
+  return {
+    ordersCount, // 주문 수
+    productsCount, // 상품 수
+    usersCount, // 사용자 수
+    totalSales, // 총 매출
+    monthlySales: JSON.parse(JSON.stringify(monthlySales)), // 월별 매출
+    salesChartData: JSON.parse(JSON.stringify(await getSalesChartData(date))), // 매출 차트 데이터
+    topSalesCategories: JSON.parse(JSON.stringify(topSalesCategories)), // 최다 판매 카테고리
+    topSalesProducts: JSON.parse(JSON.stringify(topSalesProducts)), // 최다 판매 상품
+    latestOrders: JSON.parse(JSON.stringify(latestOrders)) as IOrderList, // 최신 주문 리스트
+  };
+}
+
+// 특정 기간 동안의 일별 매출 데이터를 가져와서 날짜별로 정리하는 기능의 함수 > 주문 통계 목록에서 호출함
+async function getSalesChartData(date: DateRange) {
+  const result = await Order.aggregate([
+    // 특정 기간 동안의 데이터만 필터링한다.
+    { $match: { createdAt: { $gte: date.from, $lte: date.to } } },
+
+    // 날짜별(year, month, day) 그룹화 및 매출 합산
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" },
+        },
+        totalSales: { $sum: "$totalPrice" },
+      },
+    },
+
+    // 날짜를 YYYY/MM/DD 형식으로 변환한다.
+    {
+      $project: {
+        _id: 0,
+        date: {
+          $concat: [{ $toString: "$_id.year" }, "/", { $toString: "$_id.month" }, "/", { $toString: "$_id.day" }],
+        },
+        totalSales: 1,
+      },
+    },
+    // 오름차순 정렬
+    { $sort: { date: 1 } },
+  ]);
+
+  return result;
+}
+
+// 최다 판매 상품 정의
+async function getTopSalesProducts(date: DateRange) {
+  const result = await Order.aggregate([
+    { $match: { createdAt: { $gte: date.from, $lte: date.to } } },
+    { $unwind: "$items" },
+    {
+      $group: {
+        _id: { name: "$items.name", image: "$items.image", _id: "$items.product" },
+        totalSales: { $sum: { $multiply: ["$items.quantity", "$items.price"] } },
+      },
+    },
+    { $sort: { totalSales: -1 } },
+    { $limit: 6 },
+    {
+      $project: { _id: 0, id: "$_id._id", label: "$_id.image", value: "$totalSales" },
+    },
+  ]);
+  return result;
+}
+
+// 최다 판매 카테고리
+async function getTopSalesCategories(date: DateRange, limit = 5) {
+  const result = await Order.aggregate([
+    { $match: { createdAt: { $gte: date.from, $lte: date.to } } },
+    { $unwind: "$items" },
+    { $group: { _id: "$items.category", totalSales: { $sum: "$items.quantity" } } },
+    { $sort: { totalSales: -1 } },
+    { $limit: limit },
+  ]);
+  return result;
 }
