@@ -2,9 +2,11 @@
 
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { PAGE_SIZE } from "../constants";
 import { connectToDatabase } from "../db";
 import Product, { IProduct } from "../db/models/product.model";
+import { formatError } from "../utils";
 
 // (1). 모든 카테고리를 조회한다.
 export async function getAllCategories() {
@@ -223,4 +225,92 @@ export async function getAllTags() {
           .join(" "),
       ) as string[]) || []
   );
+}
+
+// Admin 페이지에서 모든 상품을 조회하는 함수
+// 검색에 사용하는 필터에 따른 상품을 조회하는 서버 액션 정의
+export async function getAllProductsForAdmin({
+  query,
+  page = 1,
+  sort = "latest",
+  limit,
+}: {
+  query: string;
+  page?: number;
+  sort?: string;
+  limit?: number;
+}) {
+  // a). limit 기본 값 설정
+  limit = limit || PAGE_SIZE;
+
+  // b). DB 에 연결한다.
+  await connectToDatabase();
+
+  // c). 쿼리에 적용할 검색 조건을 설정한다.
+  const queryFilter =
+    query && query !== "all"
+      ? {
+          name: { $regex: query, $options: "i" },
+        }
+      : {};
+
+  // d). 정렬 조건을 설정한다.
+  const order: Record<string, 1 | -1> =
+    sort === "best-selling"
+      ? { numSales: -1 }
+      : sort === "price-low-to-high" // 가격 낮은 순
+        ? { price: 1 }
+        : sort === "price-high-to-low" // 가격 높은 순
+          ? { price: -1 }
+          : sort === "avg-customer-review" // 별점 높은 순
+            ? { avgRating: -1 } // 별점 높은 순
+            : { _id: -1 }; // 최신순}
+
+  // e). 모든 조건을 합쳐서 상품을 조회한다.
+  const products = await Product.find({
+    ...queryFilter, // 검색어 조건
+  })
+    .sort(order) // 조건에 따라 정렬
+    .skip(limit * (Number(page) - 1)) // 페이지네이션을 위한 스킵
+    .limit(limit) // 조회할 개수
+    .lean();
+
+  // f). 상품의 개수를 조회한다.
+  const countProducts = await Product.countDocuments({
+    ...queryFilter,
+  });
+
+  // 결과 리턴
+  return {
+    products: JSON.parse(JSON.stringify(products)) as IProduct[],
+    totalPages: Math.ceil(countProducts / limit), // 전체 페이지 수
+    totalProducts: countProducts, // 전체 상품 수
+    from: limit * (Number(page) - 1) + 1, // 현재 페이지의 첫 상품 번호
+    to: limit * (Number(page) - 1) + products.length, // 현재 페이지의 마지막 상품 번호
+  };
+}
+
+// Admin 페이지에서 상품을 삭제하는 함수를 정의한다.
+// TODO: INACTIVATE THIS FUNCTION FOR A WHILE FOR TESTING
+// TODO: 테스트를 위해 비활성화 (데모 시연)
+export async function deleteProduct(id: string) {
+  try {
+    console.log("ID", id);
+    // a). DB 에 연결하고 상품의 ID를 조회해서 상품을 삭제한다.
+
+    // await connectToDatabase();
+    // const res = await Product.findByIdAndDelete(id);
+    // if (!res) throw new Error("Product not found");
+
+    // b). 상품 삭제 성공 시 revalidatePath() 함수를 사용하여 /admin/products 경로의 캐시를 갱신한다.
+    revalidatePath("/admin/products");
+
+    // c). 결과를 반환한다.
+    return {
+      success: true,
+      message: "Product deleted successfully. For the test it will not be deleted",
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
 }

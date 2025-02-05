@@ -364,7 +364,7 @@ async function getTopSalesProducts(date: DateRange) {
     { $sort: { totalSales: -1 } },
     { $limit: 6 },
     {
-      $project: { _id: 0, id: "$_id._id", label: "$_id.image", value: "$totalSales" },
+      $project: { _id: 0, id: "$_id._id", label: "$_id.name", image: "$_id.image", value: "$totalSales" },
     },
   ]);
   return result;
