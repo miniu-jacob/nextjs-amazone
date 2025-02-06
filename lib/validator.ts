@@ -42,6 +42,11 @@ export const ProductInputSchema = z.object({
   numSales: z.coerce.number().int().nonnegative("Number of sales must be a non-negative number"),
 });
 
+// Admin - 상품 정보를 업데이트하는 검증 스키마(_id 추가)
+export const ProductUpdateSchema = ProductInputSchema.extend({
+  _id: z.string(),
+});
+
 // 장바구니(카트)에 들어가는 아이템의 유효성 검사를 위한 스키마를 정의한다.
 export const OrderItemSchema = z.object({
   clientId: z.string().min(1, "Client ID is required"), // 클라이언트 ID

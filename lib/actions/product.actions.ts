@@ -7,6 +7,9 @@ import { PAGE_SIZE } from "../constants";
 import { connectToDatabase } from "../db";
 import Product, { IProduct } from "../db/models/product.model";
 import { formatError } from "../utils";
+import { IProductInput } from "@/types";
+import { ProductInputSchema, ProductUpdateSchema } from "../validator";
+import { z } from "zod";
 
 // (1). 모든 카테고리를 조회한다.
 export async function getAllCategories() {
@@ -59,7 +62,11 @@ export async function getProductBySlug(slug: string) {
   // (a). DB 에 연결한다.
   await connectToDatabase();
   // (b). slug 에 해당하는 상품을 조회한다.
-  const product = await Product.findOne({ slug, isPublished: true });
+
+  // (b-1). 한글 디코딩 적용
+  const decodedSlug = decodeURIComponent(slug);
+
+  const product = await Product.findOne({ slug: decodedSlug, isPublished: true });
   // (c). 상품이 존재하지 않을 경우 에러를 발생시킨다.
   if (!product) throw new Error("상품을 찾을 수 없습니다");
   // (d). 상품을 반환한다.
@@ -313,4 +320,64 @@ export async function deleteProduct(id: string) {
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
+}
+
+// Admin 상품 페이지에서 상품 생성하는 함수 정의
+export async function createProduct(data: IProductInput) {
+  try {
+    // a). 데이터 검증
+    const product = ProductInputSchema.parse(data); // 데이터는 함수 호출 시 전달된다.
+
+    // b). DB 에 연결하고 상품을 생성한다. (Model.create() 메서드 사용)
+    await connectToDatabase();
+    await Product.create(product); // 상품 생성, 검증된 데이터(product)를 전달한다.
+
+    // c). 상품 생성 성공 시 revalidatePath() 함수를 사용하여 /admin/products 경로의 캐시를 갱신한다.
+    revalidatePath("/admin/products");
+
+    // d). 결과를 반환한다.
+    return {
+      success: true,
+      message: "Product created successfully",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
+
+// Admin 상품 페이지에서 상품을 업데이트하는 함수 정의
+export async function updateProduct(data: z.infer<typeof ProductUpdateSchema>) {
+  try {
+    // a). 데이터 검증
+    const product = ProductUpdateSchema.parse(data);
+
+    // b). DB 에 연결하고 상품을 업데이트한다. (Model.findByIdAndUpdate() 메서드 사용)
+    await connectToDatabase();
+    await Product.findByIdAndUpdate(product._id, product); // ID 로 찾고 업데이트할 내용(product)을 전달한다.
+
+    // c). 상품 수정 성공 시 revalidatePath() 함수를 사용하여 /admin/products 경로의 캐시를 갱신한다.
+    revalidatePath("/admin/products");
+
+    // d). 결과를 반환한다.
+    return {
+      success: true,
+      message: "Product updated successfully",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
+
+// Admin 상품 페이지에서 상품을 조회하는 함수 정의
+export async function getProductById(productId: string) {
+  // a). DB 연결 후 상품 아이디로 상품을 조회하여 JSON 형태로 반환한다.
+  await connectToDatabase();
+  const product = await Product.findById(productId);
+  return JSON.parse(JSON.stringify(product)) as IProduct;
 }

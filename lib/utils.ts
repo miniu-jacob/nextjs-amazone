@@ -36,7 +36,8 @@ export const formatNumberWithDecimal = (num: number): string => {
 export const toSlug = (text: string): string =>
   text
     .toLowerCase()
-    .replace(/[^\w\s-]+/g, "")
+    // .replace(/[^\w\s-]+/g, "") <-- 여기에서 한글이 제거됨 (임시 주석)
+    .replace(/[^\p{L}\p{N}\s-]+/gu, "") // 한글 및 유니코드 문자 허용
     .replace(/\s+/g, "-")
     .replace(/^-+|-+$/g, "")
     .replace(/-+/g, "-");

@@ -18,10 +18,15 @@ import RatingSummary from "@/components/shared/product/rating-summary";
 // (1). 메타데이터를 생성하는 함수를 정의한다.
 export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
   // (a). slug 를 받아온다.
-  const params = await props.params;
+  // const params = await props.params;
 
   // (b). 받아온 slug로 상품 정보를 조회하는 서버 액션을 호출한다.
-  const product = await getProductBySlug(params.slug);
+
+  // (b-1). 슬러그 한글 디코딩 적용
+  const slug = decodeURIComponent((await props.params).slug);
+
+  // const product = await getProductBySlug(params.slug);
+  const product = await getProductBySlug(slug);
 
   // (c). 조회된 상품이 없다면 에러 반환
   if (!product) throw new Error("Product not found");
@@ -47,12 +52,13 @@ export default async function ProductDetails(props: {
   // (c). props.params로 가져온 내용을 params 변수에 넣고 slug를 가져온다.
   const params = await props.params;
   const { slug } = params;
+  const decodedSlug = decodeURIComponent(slug);
 
   // (A). 리뷰 작성/수정을 위해 세션 정보를 가져온다.
   const session = await auth();
 
   // (d). slug를 통해 상품 정보를 조회한다.
-  const product = await getProductBySlug(slug);
+  const product = await getProductBySlug(decodedSlug);
 
   // (e). 관련 있는 상품(관련 상품)을 조회한다.
   const relatedProducts = await getRelatedProductsByCategory({

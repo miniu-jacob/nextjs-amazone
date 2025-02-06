@@ -64,6 +64,8 @@ body {
   }
 }
 
+
+
 @layer base {
   * {
     @apply border-border;
@@ -71,6 +73,15 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+      /* 여기서 ::file-selector-button 스타일 추가 */
+      input[type="file"]::file-selector-button {
+        @apply bg-gray-200 text-black px-4 py-2 rounded cursor-pointer;
+      }
+
+      input[type="file"]::file-selector-button:hover {
+        @apply bg-gray-300;
+      }
 }
 
 @layer utilities {
@@ -101,4 +112,5 @@ body {
   .item-button {
     @apply p-3 hover:bg-muted hover:no-underline;
   }
+
 }
