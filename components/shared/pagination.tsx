@@ -5,6 +5,7 @@
 import { formUrlQuery } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "../ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 type PaginationProps = {
   page: number | string;
@@ -33,12 +34,18 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
 
   // 페이지네이션 컴포넌트를 랜더링한다.
   return (
-    <div className="flex gap-2">
-      <Button size="lg" variant={"outline"} className="w-28" onClick={() => onClick("prev")} disabled={Number(page) <= 1}>
-        Previous
+    <div className="flex items-center gap-2">
+      <Button size="lg" variant={"outline"} className="w-24" onClick={() => onClick("prev")} disabled={Number(page) <= 1}>
+        <ChevronLeft />
+        <span className="pr-2">Previous</span>
       </Button>
-      <Button size={"lg"} variant={"outline"} className="w-28" onClick={() => onClick("next")} disabled={Number(page) >= totalPages}>
-        Next
+      {/* 현재 페이지와 총 페이지 수를 표시한다. */}
+      <div className="text-sm mx-4">
+        {page} / {totalPages}
+      </div>
+      <Button size={"lg"} variant={"outline"} className="w-24" onClick={() => onClick("next")} disabled={Number(page) >= totalPages}>
+        <span className="pl-4">Next</span>
+        <ChevronRight />
       </Button>
     </div>
   );

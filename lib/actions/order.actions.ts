@@ -381,3 +381,54 @@ async function getTopSalesCategories(date: DateRange, limit = 5) {
   ]);
   return result;
 }
+
+// 대시보드에서 주문을 삭제하는 서버 액션을 정의한다.
+export async function deleteOrder(id: string) {
+  try {
+    // DB에 연결하여 id를 전달해 주문을 삭제한다. (findByIdAndDelete)
+    await connectToDatabase();
+    const res = await Order.findByIdAndDelete(id);
+    if (!res) throw new Error("Order not found");
+
+    // 페이지 새로고침(/admin/orders)
+    revalidatePath("/admin/orders");
+
+    // 삭제 성공 시 응답 반환
+    return {
+      success: true,
+      message: "Order deleted successfully",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: formatError(error),
+    };
+  }
+}
+
+// 대시보드에서 주문 관리를 위해 전체 주문을 가져오는 서버 액션을 정의한다.
+export async function getAllOrders({ limit, page }: { limit?: number; page: number }) {
+  // limit에 대한 기본값 설정
+  limit = limit || PAGE_SIZE; // 기본값은 9로 설정하였다. (lib/constants.ts 참조)
+  // DB에 연결한다.
+  await connectToDatabase();
+
+  // 페이지네이션을 위한 offset을 계산한다. (skipAmount)
+  const skipAmount = (Number(page) - 1) * limit; // limit가 undefined 일 수 있기 때문에 기본값을 위에 설정
+
+  // 주문 목록을 조회한다.
+  const orders = await Order.find()
+    .populate("user", "name") // 사용자 정보 user 필드를 name만 가져온다.
+    .sort({ createdAt: "desc" }) // 최신 주문이 먼저 나오도록 내림차순 정렬
+    .skip(skipAmount) // skipAmount 만큼 건너뛴다.
+    .limit(limit); // limit 만큼 조회한다. (한 페이지에 표시할 주문 개수)
+
+  // 총 주문 개수를 조회한다. (몇 개 중 몇 개인지 표시하기 위함)
+  const ordersCount = await Order.countDocuments();
+
+  // 데이터 반환
+  return {
+    data: JSON.parse(JSON.stringify(orders)) as IOrderList[], // 주문 목록을 JSON 형태로 반환
+    totalPages: Math.ceil(ordersCount / limit), // 전체 페이지 수를 계산하여 반환
+  };
+}

@@ -16,6 +16,7 @@ import { toSlug } from "@/lib/utils";
 import { ProductInputSchema, ProductUpdateSchema } from "@/lib/validator";
 import { IProductInput } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -244,14 +245,29 @@ const ProductForm = ({
                     <div className="flex flex-wrap md:flex-nowrap items-center gap-2 relative">
                       <div className="flex justify-start items-center space-x-2">
                         {images.map((image: string) => (
-                          <Image
-                            key={image}
-                            src={image}
-                            alt="product image"
-                            height={100}
-                            width={100}
-                            className="w-20 h-20 object-cover object-center rounded-sm"
-                          />
+                          <Card key={image} className="relative">
+                            <Image
+                              key={image}
+                              src={image}
+                              alt="product image"
+                              height={100}
+                              width={100}
+                              className="w-36 h-36 object-cover object-center rounded-sm"
+                            />
+                            <Button
+                              variant={"destructive"}
+                              className="absolute top-1 right-1"
+                              type="button"
+                              size={"icon"}
+                              onClick={() => {
+                                form.setValue(
+                                  "images",
+                                  images.filter((img) => img !== image),
+                                );
+                              }}>
+                              <Trash />
+                            </Button>
+                          </Card>
                         ))}
                       </div>
 

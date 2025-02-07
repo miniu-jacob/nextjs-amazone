@@ -76,8 +76,10 @@ const useCartStore = create(
         });
 
         // 제품의 clientId를 반환한다.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-        return updatedCartItems.find((x) => x.product === item.product && x.color === item.color && x.size === item.size)?.clientId!;
+        const foundItem = updatedCartItems.find((x) => x.product === item.product && x.color === item.color && x.size === item.size);
+        if (!foundItem) throw new Error("Item not found in cart");
+
+        return foundItem.clientId;
       }, // End of addItem
 
       // ### (2). 상품 업데이트 함수 정의
