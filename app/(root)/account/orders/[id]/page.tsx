@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { formatId } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import OrderDetailsForm from "../order-details-form";
+import OrderDetailsForm from "../../../../../components/shared/order/order-details-form";
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

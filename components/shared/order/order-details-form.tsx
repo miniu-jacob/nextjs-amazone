@@ -1,4 +1,4 @@
-// app/(root)/account/orders/order-details-form.tsx
+// components/shared/order/order-details-form.tsx
 
 "use client";
 
@@ -11,9 +11,12 @@ import { IOrder } from "@/lib/db/models/order.model";
 import { cn, formatDateTime } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import ActionButton from "../action-button";
+import { deliverOrder, updateOrderToPaid } from "@/lib/actions/order.actions";
 
 export default function OrderDetailsForm({
   order, // 주문 내역을 매개변수로 받는다.
+  isAdmin, // 관리자 여부를 매개변수로 받는다.
 }: {
   order: IOrder;
   isAdmin: boolean;
@@ -143,6 +146,13 @@ export default function OrderDetailsForm({
                 Pay Order
               </Link>
             )}
+
+            {/* 배송 전인 경우 (Admin) */}
+            {isAdmin && !isPaid && paymentMethod === "Cash On Delivery" && (
+              <ActionButton caption="Mark as Paid" action={() => updateOrderToPaid(order._id)} />
+            )}
+            {/* 관리자이고 결제완료했지만 배송 전인 경우 */}
+            {isAdmin && isPaid && !isDelivered && <ActionButton caption="Mark as delivered" action={() => deliverOrder(order._id)} />}
           </CardContent>
         </Card>
       </div>

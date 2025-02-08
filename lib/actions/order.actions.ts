@@ -9,11 +9,12 @@ import { auth } from "../auth";
 import { OrderInputSchema } from "../validator";
 import Order, { IOrder } from "../db/models/order.model";
 import { paypal } from "../paypal";
-import { sendPurchaseReceipt } from "@/emails";
+import { sendAskReviewOrderItems, sendPurchaseReceipt } from "@/emails";
 import { revalidatePath } from "next/cache";
 import { DateRange } from "react-day-picker";
 import Product from "../db/models/product.model";
 import User from "../db/models/user.model";
+import mongoose from "mongoose";
 
 type CalcDeliveryDateAndPriceProps = {
   items: OrderItem[];
@@ -431,4 +432,98 @@ export async function getAllOrders({ limit, page }: { limit?: number; page: numb
     data: JSON.parse(JSON.stringify(orders)) as IOrderList[], // 주문 목록을 JSON 형태로 반환
     totalPages: Math.ceil(ordersCount / limit), // 전체 페이지 수를 계산하여 반환
   };
+}
+
+// 대시보드에서 주문의 상태를 업데이트하는 서버 액션을 정의한다. (결제 완료)
+export async function updateOrderToPaid(orderId: string) {
+  try {
+    // DB 연결 후 사용자의 이메일 주소 가져오기
+    await connectToDatabase();
+    const order = await Order.findById(orderId).populate<{
+      user: { email: string; name: string };
+    }>("user", "email name");
+    // 주문이 없으면 에러를 반환한다.
+    if (!order) throw new Error("Order not found");
+    // 결제가 된 상태라면 에러를 반환한다.
+    if (order.isPaid) throw new Error("Order is already paid");
+
+    // 주문 업데이트
+
+    order.isPaid = true; // 결제 완료
+    order.paidAt = new Date(); // 결제 일자
+    await order.save();
+
+    // 재고 환경 체크 및 업데이트
+    if (!process.env.MONGODB_URI?.startsWith("mongodb://localhost")) await updateProductStock(order._id);
+
+    // 결제 완료 이메일 전송
+    if (order.user.email) await sendPurchaseReceipt({ order });
+
+    // 페이지 데이터 갱신
+    revalidatePath(`/account/orders/${orderId}`);
+
+    return { success: true, message: "Order paid successfully" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// 주문 상태를 업데이트하는 함수(updateOrderToPaid)에서 호출하는 재고 업데이트 함수
+const updateProductStock = async (orderId: string) => {
+  // Mongoose에서 제공하는 startSession() 함수를 사용하여 세션을 시작한다.
+  const session = await mongoose.connection.startSession();
+  try {
+    // 세션을 사용하여 트랜잭션을 시작한다.
+    session.startTransaction();
+
+    // opts 객체를 생성하여 세션을 전달한다. opts 객체에 session: { ... } 이 포함된다.
+    const opts = { session };
+
+    // 주문 정보를 업데이트한다.
+    const order = await Order.findOneAndUpdate({ _id: orderId }, { isPaid: true, paidAt: new Date() }, opts);
+    // const order = await Order.findOneAndUpdate({ _id: orderId }, { isPaid: false }, opts);
+    if (!order) throw new Error("Order not found");
+
+    // 주문에 포함된 상품을 순회하며 재고를 업데이트한다.
+    for (const item of order.items) {
+      const product = await Product.findById(item.product).session(session);
+      if (!product) throw new Error("Product not found");
+
+      product.countInStock -= item.quantity; // 상품 재고를 감소시킨다.
+      await Product.updateOne({ _id: product._id }, { countInStock: product.countInStock }, opts); // 상품 정보를 업데이트한다.
+    }
+
+    // 세션을 커밋하고 종료한다.
+    await session.commitTransaction();
+    session.endSession();
+    return true;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+// 배송 완료 상태로 업데이트하는 서버 액션을 정의한다.
+export async function deliverOrder(orderId: string) {
+  try {
+    // DB에 연결하여 주문을 조회한다.
+    await connectToDatabase();
+
+    const order = await Order.findById(orderId).populate<{ user: { email: string; name: string } }>("user", "name email");
+    if (!order) throw new Error("Order not found");
+    if (!order.isPaid) throw new Error("Order is not paid");
+
+    // 배송 상태 업데이트
+    order.isDelivered = true; // 배송 완료
+    order.deliveredAt = new Date(); // 배송 일자
+    await order.save();
+
+    // 이메일 전송 및 페이지 갱신
+    if (order.user.email) await sendAskReviewOrderItems({ order });
+    revalidatePath(`/account/orders/${orderId}`);
+    return { success: true, message: "Order delivered successfully" };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
 }
