@@ -387,9 +387,22 @@ async function getTopSalesCategories(date: DateRange, limit = 5) {
 export async function deleteOrder(id: string) {
   try {
     // DB에 연결하여 id를 전달해 주문을 삭제한다. (findByIdAndDelete)
+    // await connectToDatabase();
+    // const res = await Order.findByIdAndDelete(id);
+    // if (!res) throw new Error("Order not found");
+
+    /* (2502) 테스트를 위해 로그인 된 사용자의 정보를 가져와서 주문 사용자와 비교한다.  */
+    const session = await auth();
+    if (!session || !session.user) throw new Error("Unauthorized");
     await connectToDatabase();
-    const res = await Order.findByIdAndDelete(id);
-    if (!res) throw new Error("Order not found");
+    const order = await Order.findById(id);
+    if (!order) throw new Error("Order not found");
+
+    // 현재 로그인한 사용자의 ID와 주문을 생성한 사용자의 ID 비교
+    if (order.user.toString() !== session.user.id) throw new Error("You are not authorized to delete this order");
+
+    // 주문 삭제
+    await Order.findByIdAndDelete(id);
 
     // 페이지 새로고침(/admin/orders)
     revalidatePath("/admin/orders");
@@ -397,7 +410,7 @@ export async function deleteOrder(id: string) {
     // 삭제 성공 시 응답 반환
     return {
       success: true,
-      message: "Order deleted successfully",
+      message: "Order deleted successfully.",
     };
   } catch (error) {
     return {

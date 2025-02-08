@@ -9,9 +9,10 @@ import { connectToDatabase } from "../db";
 import User, { IUser } from "../db/models/user.model";
 import { clog } from "../jlogger";
 import { formatError } from "../utils";
-import { UserSignUpSchema } from "../user-validator";
+import { UserSignUpSchema, UserUpdateSchema } from "../user-validator";
 import { revalidatePath } from "next/cache";
 import { PAGE_SIZE } from "../constants";
+import { z } from "zod";
 
 // (1). 사용자의 이메일과 비밀번호를 사용하여 로그인을 하는 서버 액션
 export async function signInWithCredentials(user: IUserSignIn) {
@@ -94,15 +95,16 @@ export async function updateUserName(user: IUserName) {
 // Admin Page 에서 유저 관리 > 유저 삭제 정의 함수
 export async function deleteUser(id: string) {
   try {
-    await connectToDatabase();
-    const res = await User.findByIdAndDelete(id);
-    if (!res) throw new Error("User not found");
+    // await connectToDatabase();
+    // const res = await User.findByIdAndDelete(id);
+    // if (!res) throw new Error("User not found");
 
     revalidatePath("/admin/users");
 
     return {
       success: true,
-      message: "User deleted successfully",
+      message: "User deleted successfully. For testing, actual data will not be deleted.",
+      data: { _id: id },
     };
   } catch (error) {
     return { success: false, message: formatError(error) };
@@ -122,4 +124,31 @@ export async function getAllUsers({ limit, page }: { limit?: number; page: numbe
 
   // 결과를 리턴한다.
   return { data: JSON.parse(JSON.stringify(users)) as IUser[], totalPages: Math.ceil(usersCount / limit) };
+}
+
+// Admin Page 에서 유저 관리 > 유저 정보 변경 함수 정의
+export async function updateUser(user: z.infer<typeof UserUpdateSchema>) {
+  try {
+    await connectToDatabase();
+    const dbUser = await User.findById(user._id);
+    if (!dbUser) throw new Error("User not found");
+
+    dbUser.name = user.name;
+    dbUser.email = user.email;
+    dbUser.role = user.role;
+
+    const updatedUser = await dbUser.save();
+    revalidatePath("/admin/users");
+    return { success: true, message: "User updated successfully", data: JSON.parse(JSON.stringify(updatedUser)) };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Admin Page 에서 유저 관리 > 유저 정보 조회 함수 정의
+export async function getUserById(userId: string) {
+  await connectToDatabase();
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found");
+  return JSON.parse(JSON.stringify(user)) as IUser;
 }

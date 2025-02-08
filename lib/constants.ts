@@ -56,5 +56,8 @@ export const AVAILABLE_DELIVERY_DATES = [
 
 // 서버 URL 등록
 export const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:3000";
-export const SENDER_EMAIL = process.env.SENDER_EMAIL || 'support@miniu.kr'
-export const SENDER_NAME = process.env.SENDER_NAME || config.APP_NAME
+export const SENDER_EMAIL = process.env.SENDER_EMAIL || "support@miniu.kr";
+export const SENDER_NAME = process.env.SENDER_NAME || config.APP_NAME;
+
+// Admin Dashboard 사용자 정보 변경 시 필요한 사용자 권한을 설정한다. (owner 를 추가해 줬다. -> SuperUser 권한)
+export const USER_ROLES = ["admin", "user", "owner"];

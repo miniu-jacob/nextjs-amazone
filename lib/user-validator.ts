@@ -2,6 +2,9 @@
 
 import { z } from "zod";
 
+// Common
+const MongoId = z.string().regex(/^[0-9a-fA-F]{24}$/, { message: "Invalid MongoDB ID" });
+
 const UserName = z
   .string()
   .min(2, { message: "Username must be at least 2 characters" })
@@ -55,4 +58,12 @@ export const UserSignUpSchema = UserSignInSchema.extend({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+});
+
+// Admin 대시보드 > 유저 정보 변경을 위한 검증 스키마
+export const UserUpdateSchema = z.object({
+  _id: MongoId,
+  name: UserName,
+  email: Email,
+  role: UserRole,
 });
