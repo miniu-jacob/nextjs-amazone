@@ -6,10 +6,12 @@ import { IUserName, IUserSignIn, IUserSignUp } from "@/types";
 import { auth, signIn, signOut } from "../auth";
 import { redirect } from "next/navigation";
 import { connectToDatabase } from "../db";
-import User from "../db/models/user.model";
+import User, { IUser } from "../db/models/user.model";
 import { clog } from "../jlogger";
 import { formatError } from "../utils";
 import { UserSignUpSchema } from "../user-validator";
+import { revalidatePath } from "next/cache";
+import { PAGE_SIZE } from "../constants";
 
 // (1). 사용자의 이메일과 비밀번호를 사용하여 로그인을 하는 서버 액션
 export async function signInWithCredentials(user: IUserSignIn) {
@@ -87,4 +89,37 @@ export async function updateUserName(user: IUserName) {
   } catch (error) {
     return { success: false, message: formatError(error) };
   }
+}
+
+// Admin Page 에서 유저 관리 > 유저 삭제 정의 함수
+export async function deleteUser(id: string) {
+  try {
+    await connectToDatabase();
+    const res = await User.findByIdAndDelete(id);
+    if (!res) throw new Error("User not found");
+
+    revalidatePath("/admin/users");
+
+    return {
+      success: true,
+      message: "User deleted successfully",
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Admin Page 에서 유저 관리 > 전체 유저 조회 함수 정의
+export async function getAllUsers({ limit, page }: { limit?: number; page: number }) {
+  limit = limit || PAGE_SIZE;
+  await connectToDatabase();
+
+  // skipAmount 계산 (page - 1) * limit
+  const skipAmount = (Number(page) - 1) * limit;
+
+  const users = await User.find().sort({ createdAt: "desc" }).skip(skipAmount).limit(limit);
+  const usersCount = await User.countDocuments();
+
+  // 결과를 리턴한다.
+  return { data: JSON.parse(JSON.stringify(users)) as IUser[], totalPages: Math.ceil(usersCount / limit) };
 }

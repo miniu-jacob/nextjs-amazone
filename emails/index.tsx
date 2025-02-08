@@ -39,7 +39,7 @@ export const sendAskReviewOrderItems = async ({ order }: { order: IOrder }) => {
     subject: "Review your order items",
     // react 속성에 리뷰 요청 이메일 컴포넌트를 전달한다.
     react: <AskReviewOrderItemsEmail order={order} />,
-    // scheduledAt: oneDayFromNow,  (테스트를 위해 즉시로 변경한다.)
-    scheduledAt: rightNow, // 24시간 뒤에 이메일을 전송한다. (테스트를 위해 즉시로 변경한다.)
+    scheduledAt: oneDayFromNow, //  24시간 뒤에 이메일을 전송한다.
+    // scheduledAt: rightNow,  <----- 테스트를 위해 즉시로 변경한다.
   });
 };
