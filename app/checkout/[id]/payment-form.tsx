@@ -192,7 +192,7 @@ export default function OrderPaymentForm({
               <p>Delivery date: {formatDateTime(expectedDeliveryDate).dateOnly}</p>
               <ul>
                 {items.map((item) => (
-                  <li key={item.slug}>
+                  <li key={`${item.product}-${item.slug}-${item.color}-${item.size}`}>
                     {item.name} x {item.quantity} = {item.price}
                   </li>
                 ))}

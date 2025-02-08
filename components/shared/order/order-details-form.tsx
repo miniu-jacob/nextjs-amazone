@@ -85,7 +85,7 @@ export default function OrderDetailsForm({
               </TableHeader>
               <TableBody>
                 {items.map((item) => (
-                  <TableRow key={item.slug}>
+                  <TableRow key={`${item.product}-${item.slug}-${item.color}-${item.size}`}>
                     <TableCell>
                       <Link href={`/product/${item.slug}`} className="flex items-center">
                         <Image src={item.image} alt={item.name} width={50} height={50} />
