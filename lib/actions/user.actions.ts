@@ -129,17 +129,22 @@ export async function getAllUsers({ limit, page }: { limit?: number; page: numbe
 // Admin Page 에서 유저 관리 > 유저 정보 변경 함수 정의
 export async function updateUser(user: z.infer<typeof UserUpdateSchema>) {
   try {
+    // TODO: 유저 권한 확인 후 owner 만 변경 가능하다고 명시
     await connectToDatabase();
     const dbUser = await User.findById(user._id);
     if (!dbUser) throw new Error("User not found");
 
-    dbUser.name = user.name;
-    dbUser.email = user.email;
-    dbUser.role = user.role;
+    // dbUser.name = user.name;
+    // dbUser.email = user.email;
+    // dbUser.role = user.role;
 
     const updatedUser = await dbUser.save();
     revalidatePath("/admin/users");
-    return { success: true, message: "User updated successfully", data: JSON.parse(JSON.stringify(updatedUser)) };
+    return {
+      success: true,
+      message: "User updated successfully",
+      data: JSON.parse(JSON.stringify(updatedUser)),
+    };
   } catch (error) {
     return { success: false, message: formatError(error) };
   }

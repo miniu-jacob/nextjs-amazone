@@ -13,7 +13,6 @@ const links = [
   { title: "Orders", href: "/admin/orders" },
   { title: "Users", href: "/admin/users" },
   { title: "Pages", href: "/admin/web-pages" },
-  { title: "Carousel", href: "/admin/carousels" },
   { title: "Settings", href: "/admin/settings" },
 ];
 

@@ -10,6 +10,7 @@ import { formatError } from "../utils";
 import { IProductInput } from "@/types";
 import { ProductInputSchema, ProductUpdateSchema } from "../validator";
 import { z } from "zod";
+import { auth } from "../auth";
 
 // (1). 모든 카테고리를 조회한다.
 export async function getAllCategories() {
@@ -351,11 +352,16 @@ export async function createProduct(data: IProductInput) {
 // Admin 상품 페이지에서 상품을 업데이트하는 함수 정의
 export async function updateProduct(data: z.infer<typeof ProductUpdateSchema>) {
   try {
+    // TODO: 사용자의 세션을 가져와서 본인이 만든 상품인지 확인하는 로직추가
+    const session = await auth();
+    if (!session || session?.user.role !== "owner") throw new Error("For DEMO, only owner can update the product");
+
     // a). 데이터 검증
     const product = ProductUpdateSchema.parse(data);
 
     // b). DB 에 연결하고 상품을 업데이트한다. (Model.findByIdAndUpdate() 메서드 사용)
     await connectToDatabase();
+
     await Product.findByIdAndUpdate(product._id, product); // ID 로 찾고 업데이트할 내용(product)을 전달한다.
 
     // c). 상품 수정 성공 시 revalidatePath() 함수를 사용하여 /admin/products 경로의 캐시를 갱신한다.

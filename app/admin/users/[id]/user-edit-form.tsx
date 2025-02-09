@@ -41,7 +41,7 @@ const UserEditForm = ({ user }: { user: IUser }) => {
       }
 
       // 사용자 정보 업데이트 성공
-      toast({ description: "User updated successfully" });
+      toast({ description: "User updated successfully. For DEMO, only owner can change user information" });
       // 폼을 리셋하고 상위 페이지로 이동한다.
       // form.reset();
       router.push("/admin/users");
