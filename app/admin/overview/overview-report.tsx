@@ -76,7 +76,7 @@ export default function OverviewReport() {
     );
 
   return (
-    <div>
+    <div className="p-2">
       {/* TITLE & CALENDAR DATE RANGE PICKER */}
       <div className="flex items-center justify-between mb-2">
         <h1 className="h1-bold">Dashboard</h1>

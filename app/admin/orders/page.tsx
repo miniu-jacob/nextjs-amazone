@@ -31,7 +31,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page: 
   const orders = await getAllOrders({ page: Number(page) });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 p-2">
       <h1 className="h1-bold">Orders</h1>
       <div className="overflow-x-auto">
         <Table>

@@ -85,9 +85,6 @@ body {
 }
 
 @layer utilities {
-  .web-page-content p {
-    @apply py-2;
-  }
   .header-button {
     @apply cursor-pointer p-1 border border-transparent hover:border-white rounded-[2px];
   }
@@ -111,6 +108,10 @@ body {
 
   .item-button {
     @apply p-3 hover:bg-muted hover:no-underline;
+  }
+
+  .web-page-content p {
+    @apply py-2;
   }
 
 }

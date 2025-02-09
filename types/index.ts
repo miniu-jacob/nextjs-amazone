@@ -9,6 +9,7 @@ import {
   ProductInputSchema,
   SettingInputSchema,
   ShippingAddressSchema,
+  WebPageInputSchema,
 } from "@/lib/validator";
 import { z } from "zod";
 
@@ -18,6 +19,7 @@ export type IProductInput = z.infer<typeof ProductInputSchema>;
 // 여기서 Data.type은 product, headerMenus, carousels로 구성되며, headerMenus와 carousels는 각각 배열이다.
 export type Data = {
   // 설정 타입을 추가해 준다. (DB에서 가져오는 설정 정보)
+  webPages: IWebPageInput[]; // <--- 추가해 준다. (Admin web page)
   settings: ISettingInput[];
   users: IUserInput[];
   products: IProductInput[];
@@ -82,3 +84,6 @@ export type IReviewDetails = IReviewInput & {
     name: string;
   };
 };
+
+// WEBPAGE TYPE
+export type IWebPageInput = z.infer<typeof WebPageInputSchema>;

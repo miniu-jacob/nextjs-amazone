@@ -135,3 +135,15 @@ export const SettingInputSchema = z.object({
     phone: z.string().min(1, "Site phone is required"), // 관리자 전화번호
   }),
 });
+
+// WEBPAGE zod schema
+export const WebPageInputSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  slug: z.string().min(3, "Slug must be at least 3 characters"),
+  content: z.string().min(1, "Content is required"),
+  isPublished: z.boolean(),
+});
+
+export const WebPageUpdateSchema = WebPageInputSchema.extend({
+  _id: z.string(), // WebPage를 수정할 때는 _id 필드가 필요하다. 따라서 _id 필드를 확장한다. (extend)
+});

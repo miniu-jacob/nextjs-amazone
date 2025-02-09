@@ -29,7 +29,7 @@ export default async function AdminUser(props: { searchParams: Promise<{ page: n
   const users = await getAllUsers({ page });
 
   return (
-    <div className="space-y-2 p-4">
+    <div className="space-y-2 p-2">
       <h1 className="h1-bold">Users</h1>
       <div className="flex flex-col gap-4">
         <Table>

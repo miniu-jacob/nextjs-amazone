@@ -1,7 +1,37 @@
-import React from "react";
+// app/(root)/page/[slug]/page.tsx
 
-const PageIntroPage = () => {
-  return <div>page</div>;
-};
+import { getWebPageBySlug } from "@/lib/actions/web-page.actions";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 
-export default PageIntroPage;
+export async function generateMetadata(props: { params: Promise<{ slug: string }> }) {
+  // params 로부터 slug 를 가져와서
+  const params = await props.params;
+  const { slug } = params;
+
+  // DB 에서 조회하여 title을 return 한다.
+  const webPage = await getWebPageBySlug(slug);
+
+  if (!webPage) notFound();
+
+  return { title: webPage.title };
+}
+
+export default async function ProductDetailsPage(props: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ page: string; color: string; size: string }>;
+}) {
+  const params = await props.params;
+  const { slug } = params;
+  const webPage = await getWebPageBySlug(slug);
+  if (!webPage) notFound();
+
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <h1 className="h1-bold py-4">{webPage.title}</h1>
+      <section className="text-justify text-lg mb-20 web-page-content">
+        <ReactMarkdown>{webPage.content}</ReactMarkdown>
+      </section>
+    </div>
+  );
+}

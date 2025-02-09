@@ -22,7 +22,7 @@ export default function Footer() {
       <div className="p-4">
         {/* 개인정보 알림 링크 */}
         <div className="flex justify-center text-sm gap-3">
-          <Link href="/page/condition-of-use">Condition of Use</Link>
+          <Link href="/page/conditions-of-use">Condition of Use</Link>
           <Link href="/page/privacy-policy">Privacy Notice</Link>
           <Link href="/page/help">Help</Link>
         </div>
