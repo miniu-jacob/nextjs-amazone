@@ -3,7 +3,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { PAGE_SIZE } from "../constants";
 import { connectToDatabase } from "../db";
 import Product, { IProduct } from "../db/models/product.model";
 import { formatError } from "../utils";
@@ -11,6 +10,7 @@ import { IProductInput } from "@/types";
 import { ProductInputSchema, ProductUpdateSchema } from "../validator";
 import { z } from "zod";
 import { auth } from "../auth";
+import { getSetting } from "./setting.actions";
 
 // (1). 모든 카테고리를 조회한다.
 export async function getAllCategories() {
@@ -83,12 +83,11 @@ type getRelatedProductsByCategoryProps = {
 
 // (5). 같은 카테고리에 속한 상품을 조회하는 서버 액션(by category)
 // 매개변수로는 카테고리, 제외할 상품의 ID, 조회할 제품의 개수, 페이지 등을 받는다.
-export async function getRelatedProductsByCategory({
-  category,
-  productId,
-  limit = PAGE_SIZE,
-  page = 1,
-}: getRelatedProductsByCategoryProps) {
+export async function getRelatedProductsByCategory({ category, productId, limit = 4, page = 1 }: getRelatedProductsByCategoryProps) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
+  limit = limit || pageSize;
   // (a). DB 에 연결한다.
   await connectToDatabase();
 
@@ -131,8 +130,12 @@ export async function getAllProducts({
   rating?: string;
   sort?: string;
 }) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
+
   // a). limit 기본 값 설정
-  limit = limit || PAGE_SIZE;
+  limit = limit || pageSize;
 
   // b). DB 에 연결한다.
   await connectToDatabase();
@@ -196,7 +199,6 @@ export async function getAllProducts({
 
   // i). 상품의 개수를 조회한다.
   const countProducts = await Product.countDocuments({
-    ...isPublished, // 발행된 상품만 조회??? -> 확인 필요함
     ...queryFilter,
     ...tagFilter,
     ...categoryFilter,
@@ -248,8 +250,11 @@ export async function getAllProductsForAdmin({
   sort?: string;
   limit?: number;
 }) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
   // a). limit 기본 값 설정
-  limit = limit || PAGE_SIZE;
+  limit = limit || pageSize;
 
   // b). DB 에 연결한다.
   await connectToDatabase();
@@ -291,10 +296,10 @@ export async function getAllProductsForAdmin({
   // 결과 리턴
   return {
     products: JSON.parse(JSON.stringify(products)) as IProduct[],
-    totalPages: Math.ceil(countProducts / limit), // 전체 페이지 수
+    totalPages: Math.ceil(countProducts / pageSize), // 전체 페이지 수
     totalProducts: countProducts, // 전체 상품 수
-    from: limit * (Number(page) - 1) + 1, // 현재 페이지의 첫 상품 번호
-    to: limit * (Number(page) - 1) + products.length, // 현재 페이지의 마지막 상품 번호
+    from: pageSize * (Number(page) - 1) + 1, // 현재 페이지의 첫 상품 번호
+    to: pageSize * (Number(page) - 1) + products.length, // 현재 페이지의 마지막 상품 번호
   };
 }
 

@@ -136,10 +136,10 @@ export function timeUntilMidnight(): { hours: number; minutes: number } {
 }
 
 // 날짜를 문자열로 변환하는 유틸 함수
-export const formatDateTime = (dateString: Date) => {
+export const formatDateTime = (dateString: Date, locale: string = "en-US") => {
   const dateTimeOptions: Intl.DateTimeFormatOptions = {
-    month: "short", // 월 이름 약어 (Jan, Feb, Mar, ...)
     year: "numeric", // 연도 (2021)
+    month: "short", // 월 이름 (January, February, March, ...)
     day: "numeric", // 일 (1, 2, 3, ...)
     hour: "numeric", // 시간 (1, 2, 3, ...)
     minute: "numeric", // 분 (1, 2, 3, ...)
@@ -148,8 +148,8 @@ export const formatDateTime = (dateString: Date) => {
 
   // 날짜 옵션
   const dateOptions: Intl.DateTimeFormatOptions = {
-    month: "short", // 월 이름 약어 (Jan, Feb, Mar, ...)
     year: "numeric", // 연도 (2021)
+    month: "short", // 월 이름 약어 (Jan, Feb, Mar, ...)
     day: "numeric", // 일 (1, 2, 3, ...)
   };
 
@@ -159,9 +159,9 @@ export const formatDateTime = (dateString: Date) => {
     minute: "numeric", // 분 (1, 2, 3, ...)
     hour12: true, // AM/PM 표시 (true: 12시간제, false: 24시간제)
   };
-  const formattedDateTime: string = new Date(dateString).toLocaleString("en-US", dateTimeOptions);
-  const formattedDate: string = new Date(dateString).toLocaleString("en-US", dateOptions);
-  const formattedTime: string = new Date(dateString).toLocaleString("en-US", timeOptions);
+  const formattedDateTime: string = new Date(dateString).toLocaleString(locale, dateTimeOptions);
+  const formattedDate: string = new Date(dateString).toLocaleString(locale, dateOptions);
+  const formattedTime: string = new Date(dateString).toLocaleString(locale, timeOptions);
 
   return { dateTime: formattedDateTime, dateOnly: formattedDate, timeOnly: formattedTime };
 };

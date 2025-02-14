@@ -5,9 +5,12 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, Dr
 import { logout } from "@/lib/actions/user.actions";
 import { auth } from "@/lib/auth";
 import { ChevronRight, MenuIcon, UserCircle, X } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 export default async function Sidebar({ categories }: { categories: string[] }) {
+  // 번역, 언어를 가져온다.
+  const t = await getTranslations();
   const session = await auth();
   return (
     <Drawer direction="left">
@@ -26,14 +29,18 @@ export default async function Sidebar({ categories }: { categories: string[] }) 
                 {session ? (
                   <DrawerClose asChild>
                     <Link href={"/account"}>
-                      <span className="text-lg font-semibold">Hello, {session.user.name}</span>
+                      <span className="text-lg font-semibold">
+                        {t("Header.Hello")}, {session.user.name}
+                      </span>
                     </Link>
                   </DrawerClose>
                 ) : (
                   // 세션이 없으면 로그인 링크를 보여 준다.
                   <DrawerClose asChild>
                     <Link href={"/login"}>
-                      <span className="text-lg font-semibold">Hello, sign in</span>
+                      <span className="text-lg font-semibold">
+                        {t("Header.Hello")}, {t("Header.sign in")}
+                      </span>
                     </Link>
                   </DrawerClose>
                 )}
@@ -52,13 +59,13 @@ export default async function Sidebar({ categories }: { categories: string[] }) 
           {/* CATEGORY AREA */}
           <div className="flex-1 overflow-y-auto">
             <div className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Shop By Department</h2>
+              <h2 className="text-lg font-semibold">{t("Header.Shop By Department")}</h2>
             </div>
             <nav className="flex flex-col">
               {categories.map((category) => (
                 <DrawerClose asChild key={category}>
                   <Link href={`/search?category=${category}`} className={`flex items-center justify-between item-button`}>
-                    <span>{category}</span>
+                    <span className="pl-2">{category}</span>
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </DrawerClose>
@@ -67,30 +74,30 @@ export default async function Sidebar({ categories }: { categories: string[] }) 
           </div>
 
           {/* SETTING AND HELP */}
-          <div className="border-t flex flex-col">
+          <div className="border-t flex flex-col mb-2 pl-2">
             <div className="p-4">
-              <h2 className="text-lg font-semibold">Help & Settings</h2>
+              <h2 className="text-lg font-semibold">{t("Header.Help & Settings")}</h2>
             </div>
             <DrawerClose asChild>
-              <Link href={"/account"} className="item-button">
-                Your Account
+              <Link href={"/account"} className="item-button text-sm">
+                {t("Header.Your account")}
               </Link>
             </DrawerClose>
             <DrawerClose asChild>
-              <Link href={"/page/customer-service"} className="item-button">
-                Customer Service
+              <Link href={"/page/customer-service"} className="item-button text-sm">
+                {t("Header.Customer Service")}
               </Link>
             </DrawerClose>
             {/* 세션이 있는 경우 로그아웃 버튼 */}
             {session ? (
               <form action={logout} className="w-full">
-                <Button className="w-full justify-start item-button text-base" variant={"ghost"}>
-                  Sign out
+                <Button className="w-full justify-start item-button text-sm" variant={"ghost"}>
+                  {t("Header.Sign out")}
                 </Button>
               </form>
             ) : (
               <Link href={"/login"} className="item-button">
-                Sign in
+                {t("Header.Sign in")}
               </Link>
             )}
           </div>

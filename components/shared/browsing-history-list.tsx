@@ -7,25 +7,29 @@ import { Separator } from "../ui/separator";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import ProductSlider from "./product/product-slider";
+import { useTranslations } from "next-intl"; // 번역을 위한 훅을 가져온다.
 
 type ProductListProps = {
   title: string;
   type: "history" | "related"; // (A). 타입을 history, related로 정의한다.
   hideDetails?: boolean;
+  excludeId?: string;
 };
 
 export default function BrowsingHistoryList({ className }: { className?: string }) {
   // (1). useBrowsingHistory 훅을 사용하여 상품 배열을 가져온다.(zustand 스토어로 정의해 놓았다.)
   const { products } = useBrowsingHistory();
+  const t = useTranslations("Home"); // 다국어 번역 훅을 호출 > "Home" 섹션의 번역을 가져온다.
 
   // (2). 상품 배열이 있을 때만 랜더링한다. (products.length !== 0)
   return (
     products.length !== 0 && (
       <div className="bg-background">
         <Separator className={cn("mb-4", className)} />
-        <ProductList title={"Related to items that you've viewed"} type="related" />
+        {/* <ProductList title={"Related to items that you've viewed"} type="related" /> */}
+        <ProductList title={t("Related to items that you've viewed")} type="related" />
         <Separator className="mb-4" />
-        <ProductList title={"Your browsing history"} hideDetails type="history" />
+        <ProductList title={t("Your browsing history")} hideDetails type="history" />
       </div>
     )
   );

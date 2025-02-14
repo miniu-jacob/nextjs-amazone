@@ -1,8 +1,11 @@
 // components/shared/cart-sidebar.tsx
 
+"use client";
+
 import useCartStore from "@/hooks/use-cart-store";
+import useSettingStore from "@/hooks/use-setting-store";
+import { useTranslations } from "next-intl";
 import ProductPrice from "./product/product-price";
-import { FREE_SHIPPING_MIN_PRICE } from "@/lib/constants";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "../ui/button";
@@ -11,8 +14,13 @@ import { ScrollArea } from "../ui/scroll-area";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { TrashIcon } from "lucide-react";
+// import { useEffect } from "react";
+// import { clog } from "@/lib/jlogger";
+// import { usePathname, useRouter } from "@/i18n/routing";
 
 export default function CartSidebar() {
+  // const router = useRouter();
+  // const pathname = usePathname() as string;
   // (1). useCartStore에서 필요 데이터들을 가져온다.
   const {
     cart: { items, itemsPrice },
@@ -20,22 +28,34 @@ export default function CartSidebar() {
     removeItem,
   } = useCartStore();
 
+  // 글로벌 설정에서 freeShippingMinPrice 를 가져온다.
+  const {
+    setting: {
+      common: { freeShippingMinPrice },
+    },
+  } = useSettingStore();
+
+  // useTranslations훅 호출
+  const t = useTranslations();
+
   return (
-    <div className="w-36 overflow-y-auto">
-      <div className={`fixed border-l h-full`}>
+    <div className="w-32 overflow-y-auto">
+      <div className={`w-32 fixed border-l h-full`}>
         <div className="p-2 h-full flex flex-col gap-2 justify-start items-center">
           <div className="text-center space-y-2">
-            <div>Subtotal</div>
+            <div className="text-sm">{t("Cart.Subtotal")}</div>
             {/* 가격 정보 */}
             <div className="font-bold">
               <ProductPrice price={itemsPrice} plain />
             </div>
             {/* 소계 표시 및 배송 메시지 */}
-            {itemsPrice > FREE_SHIPPING_MIN_PRICE && <div className="text-center text-xs"> Your order qualifies for FREE Shipping</div>}
+            {itemsPrice > freeShippingMinPrice && (
+              <div className="text-center text-xs">{t("Cart.Your order qualifies for FREE Shipping")}</div>
+            )}
 
             {/* GO TO CART 버튼 */}
-            <Link href={"/cart"} className={cn(buttonVariants({ variant: "outline" }), "rounded-full hover:no-underline")}>
-              Go to Cart
+            <Link href={"/cart"} className={cn(buttonVariants({ variant: "outline" }), "rounded-full hover:no-underline text-xs")}>
+              {t("Cart.Go to Cart")}
             </Link>
             {/* 구분선 */}
             <Separator className="mt-3" />

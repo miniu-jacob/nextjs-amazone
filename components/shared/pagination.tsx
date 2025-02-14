@@ -6,6 +6,7 @@ import { formUrlQuery } from "@/lib/utils";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type PaginationProps = {
   page: number | string;
@@ -17,6 +18,8 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
   // ✅ useRouter() 와 useSearchParams() 훅을 사용하여 현재 URL 정보를 가져온다.
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const t = useTranslations();
 
   // ✅  btnType을 받아 페이지 이동을 처리하는 함수를 작성한다.
   const onClick = (btnType: string) => {
@@ -37,14 +40,14 @@ const Pagination = ({ page, totalPages, urlParamName }: PaginationProps) => {
     <div className="flex items-center gap-2">
       <Button size="lg" variant={"outline"} className="w-24" onClick={() => onClick("prev")} disabled={Number(page) <= 1}>
         <ChevronLeft />
-        <span className="pr-2">Previous</span>
+        <span className="pr-2">{t("Search.Previous")}</span>
       </Button>
       {/* 현재 페이지와 총 페이지 수를 표시한다. */}
       <div className="text-sm mx-4">
         {page} / {totalPages}
       </div>
       <Button size={"lg"} variant={"outline"} className="w-24" onClick={() => onClick("next")} disabled={Number(page) >= totalPages}>
-        <span className="pl-4">Next</span>
+        <span className="pl-4">{t("Search.Next")}</span>
         <ChevronRight />
       </Button>
     </div>

@@ -120,20 +120,75 @@ export const OrderInputSchema = z.object({
   paidAt: z.date().optional(), // 결제 날짜
 });
 
+// 다국어 설정을 위한 스키마 정의 부분 ---------------------------------
+export const SiteLanguageSchema = z.object({
+  name: z.string().min(1, "Language name is required"), // 언어 이름
+  code: z.string().min(1, "Language code is required"), // 언어 코드
+});
+
+// 캐러셀 검증 스키마
+export const CarouselSchema = z.object({
+  title: z.string().min(1, "Title is required"), // 제목
+  url: z.string().min(1, "URL is required"), // URL
+  image: z.string().min(1, "Image URL is required"), // 이미지 URL
+  buttonCaption: z.string().min(1, "Button caption is required"), // 버튼 캡션
+});
+
+// 통화 설정 스키마
+export const SiteCurrencySchema = z.object({
+  name: z.string().min(1, "Currency name is required"), // 통화 이름
+  code: z.string().min(1, "Currency code is required"), // 통화 코드
+  convertRate: z.coerce.number().min(0, "Convert rate must be at least 0"), // 환율
+  symbol: z.string().min(1, "Currency symbol is required"), // 통화 기호
+});
+
+// 결제 방법 스키마
+export const PaymentMethodSchema = z.object({
+  name: z.string().min(1, "Payment method name is required"), // 결제 방법 이름
+  commission: z.coerce.number().min(0, "Commission must be at least 0"), // 수수료
+});
+
+// 배송 옵션에 대한 스키마
+export const DeliveryDateSchema = z.object({
+  name: z.string().min(1, "Delivery date name is required"), // 배송 날짜 이름
+  daysToDeliver: z.number().min(0, "Days to deliver must be at least 0"), // 배송까지 걸리는 날짜
+  shippingPrice: z.coerce.number().min(0, "Shipping price must be at least 0"), // 배송비
+  freeShippingMinPrice: z.coerce.number().min(0, "Free shipping min price must be at least 0"), // 무료 배송 최소 금액
+});
+
 // DB 설정의 유효성을 검증할 스키마 정의
 export const SettingInputSchema = z.object({
   // 공통 설정
   common: z.object({
+    pageSize: z.coerce.number().min(1, "Page size must be at least 1").default(9), // 페이지 사이즈
+    isMaintenanceMode: z.boolean().default(false), // 유지보수 모드
+    freeShippingMinPrice: z.coerce.number().min(0, "Free shipping min price must be at least 0").default(0), // 무료 배송 최소 금액
     defaultTheme: z.string().min(1, "Default theme is required").default("light"), // 기본 테마
     defaultColor: z.string().min(1, "Default color is required").default("gold"), // 기본 색상
   }),
   // 사이트 설정
   site: z.object({
-    url: z.string().url("Invalid URL format").min(1, "Site URL is required"), // 사이트 URL
     name: z.string().min(1, "Site name is required"), // 사이트 이름
-    email: z.string().email("Invalid email format").min(1, "Site email is required"), // 관리자 이메일
+    logo: z.string().min(1, "Site logo is required"), // 사이트 로고
+    slogan: z.string().min(1, "Site slogan is required"), // 사이트 슬로건
+    description: z.string().min(1, "Site description is required"), // 사이트 설명
+    keywords: z.string().min(1, "Site keywords is required"), // 사이트 키워드
+    url: z.string().min(1, "Site URL is required"), // 사이트 URL
+    email: z.string().min(1, "Site email is required"), // 관리자 이메일
     phone: z.string().min(1, "Site phone is required"), // 관리자 전화번호
+    author: z.string().min(1, "Site author is required"), // 사이트 저자
+    copyright: z.string().min(1, "Site copyright is required"), // 사이트 저작권
+    address: z.string().min(1, "Site address is required"), // 사이트 주소
   }),
+  availableLanguages: z.array(SiteLanguageSchema).min(1, "At least one language is required"), // 사용 가능한 언어
+  carousels: z.array(CarouselSchema).min(1, "At least one carousel is required"), // 캐러셀
+  defaultLanguage: z.string().min(1, "Default language is required"), // 기본 언어
+  availableCurrencies: z.array(SiteCurrencySchema).min(1, "At least one currency is required"), // 사용 가능한 통화
+  defaultCurrency: z.string().min(1, "Default currency is required"), // 기본 통화
+  availablePaymentMethods: z.array(PaymentMethodSchema).min(1, "At least one payment method is required"), // 사용 가능한 결제 방법
+  defaultPaymentMethod: z.string().min(1, "Default payment method is required"), // 기본 결제 방법
+  availableDeliveryDates: z.array(DeliveryDateSchema).min(1, "At least one delivery date is required"), // 사용 가능한 배송 날짜
+  defaultDeliveryDate: z.string().min(1, "Default delivery date is required"), // 기본 배송 날짜
 });
 
 // WEBPAGE zod schema

@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // lib/db/seed.ts
 
-import data from "../data";
-import { connectToDatabase } from ".";
-import Product from "./models/product.model";
 import { cwd } from "process";
 import { loadEnvConfig } from "@next/env";
+import { connectToDatabase } from ".";
+import data from "../data";
+import Product from "./models/product.model";
 import User from "./models/user.model";
 import Review from "./models/review.model";
 import Order from "./models/order.model";
 import { IOrderInput, OrderItem, ShippingAddress } from "@/types";
 import { calculateFutureDate, calculatePastDate, generateId, round2 } from "../utils";
-import { AVAILABLE_DELIVERY_DATES } from "../constants";
+import Setting from "./models/setting.model";
 
 // (1). .env.local 파일을 현재 작업 디렉토리에서 로드하여 환경 변수를 설정한다.
 loadEnvConfig(cwd());
@@ -20,20 +20,26 @@ const main = async () => {
   try {
     // (2). 미리 정의된 상품 정보(data)를 불러온다.
     // (2.1). 샘플 사용자 정보도 가져온다. (users)
-    const { products, users, reviews } = data;
+    const { products, users, reviews, settings } = data;
 
     // (3). DB 에 연결한다. connectToDatabase 함수에서 이미 MONGODB_URI 환경 변수를 사용하기 때문에 인자가 필요없다.
     await connectToDatabase(process.env.MONGODB_URI);
 
-    // (4). 기존 데이터 삭제 및 새 데이터 삽입
-    await Product.deleteMany();
-    const createdProducts = await Product.insertMany(products);
-
-    // (4.1). 샘플 사용자도 삭제하고 다시 삽입한다.
+    // (4.1). 유저 데이터 삭제
     await User.deleteMany();
     const createdUser = await User.insertMany(users);
 
-    // (5). 기존의 리뷰를 삭제한다.
+    // 설정 데이터 삭제 및 삽입
+    await Setting.deleteMany();
+    const createSetting = await Setting.insertMany(settings);
+
+    // (4.2). 상품 데이터 삭제
+    await Product.deleteMany();
+    const createdProducts = await Product.insertMany(
+      products.map((x) => ({ ...x, _id: undefined })), // 상품 ID를 제거한다.
+    );
+
+    // (4.3). 리뷰 데이터 삭제
     await Review.deleteMany();
     // (5.1). 리뷰를 초기화한다.
     const rws = []; // 리뷰를 저장할 배열을 생성한다.
@@ -79,6 +85,7 @@ const main = async () => {
       createdProducts,
       createdReviews, // 리뷰 정보
       createdOrders, // 주문 정보 (샘플)
+      createSetting, // 설정 정보
       message: "Seeded database successfully",
     });
     process.exit(0);
@@ -139,10 +146,7 @@ const generateOrder = async (i: number, users: any, products: any): Promise<IOrd
 
   const order = {
     user: users[i % users.length],
-    items: items.map((item) => ({
-      ...item,
-      product: item.product,
-    })),
+    items: items.map((item) => ({ ...item, product: item.product })),
     shippingAddress: data.users[i % users.length].address,
     paymentMethod: data.users[i % users.length].paymentMethod,
     isPaid: true,
@@ -168,9 +172,10 @@ export const calcDeliveryDateAndPriceForSeed = ({
   items: OrderItem[];
   shippingAddress?: ShippingAddress;
 }) => {
+  const { availableDeliveryDates } = data.settings[0];
   const itemsPrice = round2(items.reduce((acc, item) => acc + item.price * item.quantity, 0));
 
-  const deliveryDate = AVAILABLE_DELIVERY_DATES[deliveryDateIndex === undefined ? AVAILABLE_DELIVERY_DATES.length - 1 : deliveryDateIndex];
+  const deliveryDate = availableDeliveryDates[deliveryDateIndex === undefined ? availableDeliveryDates.length - 1 : deliveryDateIndex];
 
   const shippingPrice = deliveryDate.shippingPrice;
 
@@ -178,8 +183,8 @@ export const calcDeliveryDateAndPriceForSeed = ({
   const totalPrice = round2(itemsPrice + (shippingPrice ? round2(shippingPrice) : 0) + taxPrice ? round2(taxPrice) : 0);
 
   return {
-    AVAILABLE_DELIVERY_DATES,
-    deliveryDateIndex: deliveryDateIndex === undefined ? AVAILABLE_DELIVERY_DATES.length - 1 : deliveryDateIndex,
+    availableDeliveryDates,
+    deliveryDateIndex: deliveryDateIndex === undefined ? availableDeliveryDates.length - 1 : deliveryDateIndex,
     itemsPrice,
     shippingPrice,
     taxPrice,

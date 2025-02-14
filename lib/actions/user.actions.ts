@@ -7,12 +7,11 @@ import { auth, signIn, signOut } from "../auth";
 import { redirect } from "next/navigation";
 import { connectToDatabase } from "../db";
 import User, { IUser } from "../db/models/user.model";
-import { clog } from "../jlogger";
 import { formatError } from "../utils";
 import { UserSignUpSchema, UserUpdateSchema } from "../user-validator";
 import { revalidatePath } from "next/cache";
-import { PAGE_SIZE } from "../constants";
 import { z } from "zod";
+import { getSetting } from "./setting.actions";
 
 // (1). 사용자의 이메일과 비밀번호를 사용하여 로그인을 하는 서버 액션
 export async function signInWithCredentials(user: IUserSignIn) {
@@ -37,7 +36,7 @@ export const findUserByEmail = async (email: string) => {
 
     return user;
   } catch (error) {
-    clog.error("[findUserByEmail] error", error);
+    console.error("[findUserByEmail] error", error);
     throw new Error("User not found");
   }
 };
@@ -113,7 +112,10 @@ export async function deleteUser(id: string) {
 
 // Admin Page 에서 유저 관리 > 전체 유저 조회 함수 정의
 export async function getAllUsers({ limit, page }: { limit?: number; page: number }) {
-  limit = limit || PAGE_SIZE;
+  const {
+    common: { pageSize },
+  } = await getSetting();
+  limit = limit || pageSize;
   await connectToDatabase();
 
   // skipAmount 계산 (page - 1) * limit

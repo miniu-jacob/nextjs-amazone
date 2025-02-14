@@ -15,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { useTranslations } from "next-intl";
 
 export default function DeleteDialog({
   id, // 삭제할 아이템의 ID
@@ -31,13 +32,15 @@ export default function DeleteDialog({
   const [isPending, startTransition] = useTransition();
   // 토스트 팝업
   const { toast } = useToast();
+  const t = useTranslations();
 
   // 삭제 버튼 다이어로그
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <Button size={"sm"} variant={"outline"}>
-          Delete
+          {/* {t("Admin.Delete")} */}
+          {t("Common.Delete")}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

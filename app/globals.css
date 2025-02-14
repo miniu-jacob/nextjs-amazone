@@ -114,4 +114,8 @@ body {
     @apply py-2;
   }
 
+  .p-medium-16 {
+    @apply p-2 font-medium text-sm;
+  }
+
 }

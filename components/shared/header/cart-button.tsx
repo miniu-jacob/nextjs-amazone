@@ -7,6 +7,7 @@ import useCartStore from "@/hooks/use-cart-store";
 import useIsMounted from "@/hooks/use-is-mounted";
 import { cn } from "@/lib/utils";
 import { ShoppingCartIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 
 export default function CartButton() {
@@ -24,6 +25,12 @@ export default function CartButton() {
   // (4). useCartSidebar 훅을 불러온다.
   const isCartSidebarOpen = useCartSidebar();
 
+  // 다국어 지원
+  const t = useTranslations();
+  const locale = useLocale();
+
+  const cartPosition = locale === "en-US" ? "right-[30px]" : locale === "ko-KR" ? "right-[54px]" : "right-[58px]";
+
   // (5). UI 를 랜더링한다.
   return (
     <Link href={"/cart"} className="px-1 header-button">
@@ -34,13 +41,13 @@ export default function CartButton() {
           // 카트 아이콘 좌측 상단에 카트에 담긴 아이템 수량을 표시한다.
           <span
             className={cn(
-              `bg-black px-1 rounded-full text-primary text-base font-bold absolute right-[30px] top-[-4px] z-10`,
+              `bg-black px-1 rounded-full text-primary text-sm font-bold absolute top-[-3px] z-10 ${cartPosition}`,
               cartItemsCount >= 10 && "text-sm px-0 p-[1px]",
             )}>
             {cartItemsCount}
           </span>
         )}
-        <span className="font-bold">Cart</span>
+        <span className="font-bold">{t("Header.Cart")}</span>
         {/* 카트 다음에 카트 슬라이더를 오픈 */}
         {isCartSidebarOpen && (
           <div

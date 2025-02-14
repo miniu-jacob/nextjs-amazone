@@ -8,10 +8,10 @@ import { connectToDatabase } from "../db";
 import Review, { IReview } from "../db/models/review.model";
 import mongoose from "mongoose";
 import Product from "../db/models/product.model";
-import { PAGE_SIZE } from "../constants";
 import { IReviewDetails } from "@/types";
 import { formatError } from "../utils";
 import { revalidatePath } from "next/cache";
+import { getSetting } from "./setting.actions";
 
 // 1.1) 함수 정의 및 매개변수 설정
 export async function createUpdateReview({
@@ -118,7 +118,10 @@ export async function getReviews({
   page: number;
 }) {
   // 3.2). Page limit 를 설정한다.
-  limit = limit || PAGE_SIZE;
+  const {
+    common: { pageSize },
+  } = await getSetting();
+  limit = limit || pageSize;
   // 3.3). DB 연결 후 건너뛸 데이터 설정
   await connectToDatabase();
   const skipAmount = (page - 1) * limit;

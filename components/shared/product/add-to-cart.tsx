@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import useCartStore from "@/hooks/use-cart-store";
 import { useToast } from "@/hooks/use-toast";
 import { OrderItem } from "@/types";
+import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -22,6 +23,8 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
   const { toast } = useToast();
   const { addItem } = useCartStore();
 
+  const t = useTranslations();
+
   // 카트 선택된 수량 관리
   const [quantity, setQuantity] = useState(1); // 수량은 1로 초기화
 
@@ -35,13 +38,13 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
         try {
           addItem(item, 1); // 카트에 아이템 추가
           toast({
-            description: "Added to Cart",
+            description: t("Product.Added to Cart"),
             action: (
               <Button
                 onClick={() => {
                   router.push("/cart");
                 }}>
-                Go to Cart
+                {t("Product.Go to Cart")}
               </Button>
             ),
           });
@@ -55,14 +58,16 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
           });
         }
       }}>
-      Add to Cart
+      {t("Product.Add to Cart")}
     </Button>
   ) : (
     // 확장된 UI
     <div className="w-full space-y-2">
       <Select value={quantity.toString()} onValueChange={(i) => setQuantity(Number(i))}>
         <SelectTrigger>
-          <SelectValue>Quantity: {quantity}</SelectValue>
+          <SelectValue>
+            {t("Product.Quantity")}: {quantity}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent position="popper">
           {Array.from({ length: item.countInStock }).map((_, i) => (
@@ -74,7 +79,7 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
       </Select>
       {/* 카트에 담기 버튼 */}
       <Button
-        className="rounded-full w-full"
+        className="rounded-full w-full text-sm"
         type="button"
         onClick={async () => {
           try {
@@ -87,11 +92,11 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
             });
           }
         }}>
-        Add to Cart
+        {t("Product.Add to Cart")}
       </Button>
       {/* 즉시 구매 버튼 */}
       <Button
-        className="w-full rounded-full"
+        className="w-full rounded-full text-sm"
         variant={"secondary"}
         onClick={() => {
           try {
@@ -104,7 +109,7 @@ export default function AddToCart({ item, minimal = false }: AddToCartProps) {
             });
           }
         }}>
-        Buy Now
+        {t("Product.Buy Now")}
       </Button>
     </div>
   );

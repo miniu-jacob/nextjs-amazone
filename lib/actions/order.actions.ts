@@ -3,7 +3,7 @@
 
 import { Cart, IOrderList, OrderItem, ShippingAddress } from "@/types";
 import { formatError, round2 } from "../utils";
-import { AVAILABLE_DELIVERY_DATES, PAGE_SIZE, TAX_PRICE } from "../constants";
+import { TAX_PRICE } from "../constants";
 import { connectToDatabase } from "../db";
 import { auth } from "../auth";
 import { OrderInputSchema } from "../validator";
@@ -15,6 +15,7 @@ import { DateRange } from "react-day-picker";
 import Product from "../db/models/product.model";
 import User from "../db/models/user.model";
 import mongoose from "mongoose";
+import { getSetting } from "./setting.actions";
 
 type CalcDeliveryDateAndPriceProps = {
   items: OrderItem[];
@@ -23,9 +24,11 @@ type CalcDeliveryDateAndPriceProps = {
 };
 
 export const calcDeliveryDateAndPrice = async ({ items, shippingAddress, deliveryDateIndex }: CalcDeliveryDateAndPriceProps) => {
+  const { availableDeliveryDates,  } = await getSetting();
+
   // 상품의 개별 가격(item.price) 과 수량 (item.quantity) 을 곱하여 총 가격을 계산한다.
   // lib/actions/order.actions.ts
-  "use server";
+
   // 초기값은 0으로 설정하기 위해 reduce() 함수의 두 번째 인자로 0을 전달한다.
   const itemsPrice = round2(items.reduce((acc, item) => acc + item.price * item.quantity, 0));
 
@@ -35,9 +38,9 @@ export const calcDeliveryDateAndPrice = async ({ items, shippingAddress, deliver
 
   // 사용 가능한 배송 날짜 계산
   const deliveryDate =
-    AVAILABLE_DELIVERY_DATES[
+    availableDeliveryDates[
       deliveryDateIndex === undefined
-        ? AVAILABLE_DELIVERY_DATES.length - 1 // 기본값: 마지막 날짜
+        ? availableDeliveryDates.length - 1 // 기본값: 마지막 날짜
         : deliveryDateIndex // 사용자가 선택한 날짜 인덱스
     ];
 
@@ -56,10 +59,10 @@ export const calcDeliveryDateAndPrice = async ({ items, shippingAddress, deliver
   // 각 금액들을 리턴한다.
   // return { itemsPrice, shippingPrice, taxPrice, totalPrice };
   return {
-    AVAILABLE_DELIVERY_DATES, // 사용 가능한 배송 날짜 반환
+    availableDeliveryDates, // 사용 가능한 배송 날짜 반환
     deliveryDateIndex:
       deliveryDateIndex === undefined // 선택된 배송 날짜 반환
-        ? AVAILABLE_DELIVERY_DATES.length - 1
+        ? availableDeliveryDates.length - 1
         : deliveryDateIndex, // 기본값: 마지막 날짜
     itemsPrice,
     shippingPrice,
@@ -216,8 +219,11 @@ export async function approvePayPalOrder(
 
 // 사용자가 주문한 내역을 가져오는 함수를 정의한다.
 export async function getMyOrders({ limit, page }: { limit?: number; page: number }) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
   // limit에 대한 기본값 설졍
-  limit = limit || PAGE_SIZE; // 기본값은 9로 설정하였다. (lib/constants.ts 참조)
+  limit = limit || pageSize; // 기본값은 9로 설정하였다. (lib/constants.ts 참조)
   // DB에 연결하고 사용자를 인증한다.
   await connectToDatabase();
 
@@ -247,6 +253,9 @@ export async function getMyOrders({ limit, page }: { limit?: number; page: numbe
 
 // 대시보드에서 사용하는 주문 통계 목록을 조회하는 함수 정의 - get orders by user
 export async function getOrderSummary(date: DateRange) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
   // DB 연결
   await connectToDatabase();
 
@@ -301,7 +310,7 @@ export async function getOrderSummary(date: DateRange) {
   const topSalesProducts = await getTopSalesProducts(date);
 
   // 최신 주문 리스트를 가져온다.
-  const latestOrders = await Order.find().populate("user", "name").sort({ createdAt: "desc" }).limit(PAGE_SIZE);
+  const latestOrders = await Order.find().populate("user", "name").sort({ createdAt: "desc" }).limit(pageSize);
 
   return {
     ordersCount, // 주문 수
@@ -422,8 +431,11 @@ export async function deleteOrder(id: string) {
 
 // 대시보드에서 주문 관리를 위해 전체 주문을 가져오는 서버 액션을 정의한다.
 export async function getAllOrders({ limit, page }: { limit?: number; page: number }) {
+  const {
+    common: { pageSize },
+  } = await getSetting();
   // limit에 대한 기본값 설정
-  limit = limit || PAGE_SIZE; // 기본값은 9로 설정하였다. (lib/constants.ts 참조)
+  limit = limit || pageSize;
   // DB에 연결한다.
   await connectToDatabase();
 

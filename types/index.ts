@@ -1,3 +1,4 @@
+import { CarouselSchema, DeliveryDateSchema } from "./../lib/validator";
 // types/index.ts
 
 import { ReviewInputSchema } from "@/lib/review-validator";
@@ -6,9 +7,12 @@ import {
   CartSchema,
   OrderInputSchema,
   OrderItemSchema,
+  PaymentMethodSchema,
   ProductInputSchema,
   SettingInputSchema,
   ShippingAddressSchema,
+  SiteCurrencySchema,
+  SiteLanguageSchema,
   WebPageInputSchema,
 } from "@/lib/validator";
 import { z } from "zod";
@@ -19,8 +23,8 @@ export type IProductInput = z.infer<typeof ProductInputSchema>;
 // 여기서 Data.type은 product, headerMenus, carousels로 구성되며, headerMenus와 carousels는 각각 배열이다.
 export type Data = {
   // 설정 타입을 추가해 준다. (DB에서 가져오는 설정 정보)
-  webPages: IWebPageInput[]; // <--- 추가해 준다. (Admin web page)
   settings: ISettingInput[];
+  webPages: IWebPageInput[]; // <--- 추가해 준다. (Admin web page)
   users: IUserInput[];
   products: IProductInput[];
   // 리뷰 데이터를 추가해 준다.
@@ -70,9 +74,6 @@ export type IOrderList = IOrderInput & {
   createdAt: Date;
 };
 
-// setting 타입
-export type ISettingInput = z.infer<typeof SettingInputSchema>;
-
 // 리뷰 타입 정의
 export type IReviewInput = z.infer<typeof ReviewInputSchema>;
 // 리뷰 상세 타입 정의 - 리뷰 상세 정보를 가져올 때 사용
@@ -87,3 +88,18 @@ export type IReviewDetails = IReviewInput & {
 
 // WEBPAGE TYPE
 export type IWebPageInput = z.infer<typeof WebPageInputSchema>;
+
+// 다국어 지원 및 기타
+export type ICarousel = z.infer<typeof CarouselSchema>;
+
+// setting 타입
+export type ISettingInput = z.infer<typeof SettingInputSchema>;
+
+export type ClientSetting = ISettingInput & {
+  currency: string;
+};
+
+export type SiteLanguage = z.infer<typeof SiteLanguageSchema>;
+export type SiteCurrency = z.infer<typeof SiteCurrencySchema>;
+export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
+export type DeliveryDate = z.infer<typeof DeliveryDateSchema>;
