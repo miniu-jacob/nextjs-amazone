@@ -11,6 +11,7 @@ import Sidebar from "./sidebar";
 // 설정 및 다국어지원
 import { getSetting } from "@/lib/actions/setting.actions";
 import { getTranslations } from "next-intl/server";
+// import { Link } from "@/i18n/routing";
 
 export default async function Header() {
   // 전체 카테고리를 가져오는 서버 액션 호출

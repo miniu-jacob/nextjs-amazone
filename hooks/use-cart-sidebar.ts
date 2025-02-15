@@ -10,11 +10,8 @@ const locales = i18n.locales.map((locale) => locale.code); // code만 추출한�
 
 // (3). 함수 밖에서 특정 경로인지 확인하는 변수를 선언한다.
 const isNotInPaths = (s: string) => {
-  // console.log(locales) // ✅ 사용 가능한 언어 코드 확인
-  // console.log(s) // ✅ 현재 경로 확인
   const localePattern = `/(?:${locales.join("|")})`; // ✅ 로케일 패턴 생성 (예: "/ko-KR", "/vi-VN")
   const pathsPattern = `^(?:${localePattern})?(?:/$|/cart$|/checkout$|/sign-in$|/sign-up$|/order(?:/.*)?$|/account(?:/.*)?$|/admin(?:/.*)?$)?$`;
-  // console.log(!new RegExp(pathsPattern).test(s)); // ✅ 정규식 검사 결과 확인
   return !new RegExp(pathsPattern).test(s);
 };
 

@@ -102,18 +102,18 @@ export function calculateFutureDate(days: number) {
   return currentDate;
 }
 
-// 월 이름을 반환하는 유틸
-export function getMonthName(yearAndMonth: string) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [year, monthNumber] = yearAndMonth.split("-");
-  const date = new Date();
+// 월 이름을 반환하는 유틸 - YYYY-MM 형식의 문자열을 입력받아 월 이름을 반환
+export function getMonthName(yearMonth: string): string {
+  const [year, month] = yearMonth.split("-").map(Number); // "2021-01" -> [2021, 1]
+  // Date 객체를 생성, 생성 시 month는 0부터 시작하므로 month - 1로 설정
+  const date = new Date(year, month - 1);
+  const monthName = date.toLocaleString("default", { month: "long" }); // "January"
+  const now = new Date();
 
-  // 해당 월로 세팅
-  date.setMonth(parseInt(monthNumber) - 1);
-
-  return new Date().getMonth() === parseInt(monthNumber) - 1
-    ? `${date.toLocaleString("default", { month: "long" })} (ongoing)`
-    : date.toLocaleString("default", { month: "long" });
+  if (year === now.getFullYear() && month === now.getMonth() + 1) {
+    return `${monthName} Ongoing`;
+  }
+  return monthName;
 }
 
 // 지난 날짜 계산 유틸 함수
