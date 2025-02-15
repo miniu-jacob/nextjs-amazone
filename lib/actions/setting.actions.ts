@@ -42,20 +42,20 @@ export const getSetting = async (): Promise<ISettingInput> => {
 export const updateSetting = async (newSetting: ISettingInput) => {
   try {
     // (a). DB에 연결한다.
-    // await connectToDatabase();
+    await connectToDatabase();
 
     // TODO: 데모를 위해 아래 부분 비활성화 (주석처리)
     // (b). 설정을 업데이트한다. (findOneAndUpdate 메서드를 사용한다.)
-    // const updateSetting = await Setting.findOneAndUpdate({}, newSetting, {
-    //   upsert: true,
-    //   new: true,
-    // }).lean();
+    const updateSetting = await Setting.findOneAndUpdate({}, newSetting, {
+      upsert: true,
+      new: true,
+    }).lean();
 
     // (c). 업데이트된 설정을 캐시에 저장한다.
-    // globalForSettings.cachedSettings = JSON.parse(JSON.stringify(updateSetting));
+    globalForSettings.cachedSettings = JSON.parse(JSON.stringify(updateSetting));
 
     // TODO: 데모를 위해 아래 updateSetting 이 아닌 newSetting으로 변경함.
-    globalForSettings.cachedSettings = JSON.parse(JSON.stringify(newSetting));
+    // globalForSettings.cachedSettings = JSON.parse(JSON.stringify(newSetting));
 
     // (d). 성공 메시지를 반환한다.
     return {
