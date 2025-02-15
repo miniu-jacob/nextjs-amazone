@@ -7,7 +7,7 @@ import { defineRouting } from "next-intl/routing";
 export const routing = defineRouting({
   locales: i18n.locales.map((locale) => locale.code), //  지원하는 언어 목록 (예: "en-US", "ko-KR", "vi-VN")
   defaultLocale: "en-US", // 기본 언어 (예: "en-US")
-  localePrefix: "always", // 항상 언어 접두사를 사용할지 여부 (예: true)
+  localePrefix: "as-needed", // 항상 언어 접두사를 사용할지 여부 (예: true)
   pathnames: {
     // 특정 경로에 대한 다국어 설정 (비워두면 자동 설정)
   },
