@@ -65,7 +65,7 @@ export default function LanguageSwitcher() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="center">
         <DropdownMenuLabel>Language</DropdownMenuLabel>
-        <DropdownMenuRadioGroup value={locale}>
+        <DropdownMenuRadioGroup value={locale} onValueChange={handleLocaleChange}>
           {locales.map((c) => (
             <DropdownMenuRadioItem key={c.name} value={c.code}>
               {/* <div className="w-full flex items-center gap-2 text-sm">

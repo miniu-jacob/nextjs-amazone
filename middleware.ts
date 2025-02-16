@@ -17,16 +17,8 @@ const { auth } = NextAuth(authConfig);
 
 // 공개페이지, 로그인 필요 페이지인지 구분
 export default auth((req) => {
-  // Step 2: 쿠키 우선 로직 추가
-  const userLocale = req.cookies.get("NEXT_LOCALE")?.value; // 쿠키에서 언어 가져오기
-  if (userLocale) {
-    const pathnameParts = req.nextUrl.pathname.split("/");
-    if (!routing.locales.includes(pathnameParts[1])) {
-      const url = req.nextUrl.clone();
-      url.pathname = `/${userLocale}${req.nextUrl.pathname}`;
-      return NextResponse.redirect(url);
-    }
-  }
+
+  // ### (3). 공개 페이지 여부 확인 ###
   const publicPathnameRegex = RegExp(
     `^(/(${routing.locales.join("|")}))?(${publicPages.flatMap((p) => (p === "/" ? ["", "/"] : p)).join("|")})/?$`,
     "i",

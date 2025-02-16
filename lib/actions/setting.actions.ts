@@ -8,7 +8,6 @@ import { ISettingInput } from "@/types";
 import data from "../data";
 import { formatError } from "../utils";
 import { cookies } from "next/headers";
-import { clog } from "../jlogger";
 
 // 전역 캐싱용 변수
 const globalForSettings = global as unknown as { cachedSettings: ISettingInput | null };
@@ -32,7 +31,6 @@ export const getSetting = async (): Promise<ISettingInput> => {
     // DB에서 처음 문서를 찾는다.
     const setting = await Setting.findOne().lean();
 
-    // clog.info("[getSetting] setting", setting);
 
     // 가져온 setting을 캐시에 저장한다. 없다면 기본값을 사용한다.
     globalForSettings.cachedSettings = setting ? JSON.parse(JSON.stringify(setting)) : data.settings[0];
