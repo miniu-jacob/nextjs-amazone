@@ -1,6 +1,5 @@
 // middleware.ts
 
-import { NextResponse } from "next/server"; // Step 1: 추가
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
@@ -17,6 +16,20 @@ const { auth } = NextAuth(authConfig);
 
 // 공개페이지, 로그인 필요 페이지인지 구분
 export default auth((req) => {
+  const response = intlMiddleware(req);
+
+  // Step 1: 현재 요청에서 쿠키에 설정된 언어 가져오기
+  const userLocale = req.cookies.get("NEXT_LOCALE")?.value;
+
+  // Step 2: 쿠키에가 없다면 기본 언어(`en-US`)를 사용
+  if (!userLocale) {
+    response.cookies.set("NEXT_LOCALE", routing.defaultLocale, {
+      path: "/", // 쿠키의 경로
+      maxAge: 31536000, // 쿠키 만료 시간 (1년)
+      secure: true, // HTTPS에서만 쿠키 전송 (vercel 필수)
+      sameSite: "lax", // 쿠키 전송 제한 (lax, strict, none)
+    });
+  }
 
   // ### (3). 공개 페이지 여부 확인 ###
   const publicPathnameRegex = RegExp(
@@ -39,7 +52,7 @@ export default auth((req) => {
 
       return Response.redirect(newUrl);
     } else {
-      return intlMiddleware(req);
+      return response;
     }
   }
 });

@@ -5,6 +5,8 @@ import { settingsData as data } from "@/lib/data/settings-data";
 import { create } from "zustand";
 
 interface SettingState {
+  locale: string; // Step 1: 현재 선택된 언어 (locale) 추가
+  setLocale: (newLocale: string) => void; // Step 2: 새로운 언어를 설정하는 함수 추가
   setting: ClientSetting; // SettingInputSchema + currency 추가한 타입
   setSetting: (newSetting: ClientSetting) => void; // setting을 업데이트하는 함수
   getCurrency: () => SiteCurrency; // 현재 설정된 통화를 가져오는 함수
@@ -12,6 +14,14 @@ interface SettingState {
 }
 
 const useSettingStore = create<SettingState>((set, get) => ({
+  // Step 3: locale - 현재 선택된 언어 (locale) 추가
+  locale: "en-US",
+
+  // Step 4: setLocale - 새로운 언어를 설정하는 함수 추가
+  setLocale: (newLocale: string) => {
+    set({ locale: newLocale });
+    localStorage.setItem("locale", newLocale); // 로컬 스토리지에 언어를 저장하여 새로고침 후에도 유지
+  },
   setting: {
     ...data.settings[0],
     currency: data.settings[0].defaultCurrency,
