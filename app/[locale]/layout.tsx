@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing"; // 지원되는 locales 목록을 가�
 import { notFound } from "next/navigation"; // notFound를 불러온다.
 import { cookies } from "next/headers"; // cookies를 불러온다.
 import { getSetting } from "@/lib/actions/setting.actions";
+import { clog } from "@/lib/jlogger";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,6 +51,8 @@ export default async function RootLayout({
   const currency = currencyCookie ? currencyCookie.value : "USD";
 
   const { locale } = await params;
+
+  clog.info("[RootLayout] locale", locale);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!routing.locales.includes(locale as any)) {
     notFound();

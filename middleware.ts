@@ -1,5 +1,6 @@
 // middleware.ts
 
+import { NextResponse } from "next/server"; // Step 1: 추가
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
@@ -16,6 +17,16 @@ const { auth } = NextAuth(authConfig);
 
 // 공개페이지, 로그인 필요 페이지인지 구분
 export default auth((req) => {
+  // Step 2: 쿠키 우선 로직 추가
+  const userLocale = req.cookies.get("NEXT_LOCALE")?.value; // 쿠키에서 언어 가져오기
+  if (userLocale) {
+    const pathnameParts = req.nextUrl.pathname.split("/");
+    if (!routing.locales.includes(pathnameParts[1])) {
+      const url = req.nextUrl.clone();
+      url.pathname = `/${userLocale}${req.nextUrl.pathname}`;
+      return NextResponse.redirect(url);
+    }
+  }
   const publicPathnameRegex = RegExp(
     `^(/(${routing.locales.join("|")}))?(${publicPages.flatMap((p) => (p === "/" ? ["", "/"] : p)).join("|")})/?$`,
     "i",
@@ -42,5 +53,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ['/((?!api|_next|.*\\..*).*)'],
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
 };

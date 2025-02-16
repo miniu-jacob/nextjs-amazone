@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import { startTransition, useCallback } from "react";
+import { useRouter } from "next/navigation";
 // import { useRouter } from "next/navigation";
 // import { clog } from "@/lib/jlogger";
 
@@ -28,12 +29,20 @@ export default function LanguageSwitcher() {
   const { locales } = i18n;
   const locale = useLocale(); // 현재 사용자가 선택한 언어 가져오기
   const pathname = usePathname(); // 현재 페이지 경로 가져오기
+  const router = useRouter();
 
   // 전역 설정에서 site, availableCurrencies, currency를 가져온다.
   const {
     setting: { availableCurrencies, currency },
     setCurrency,
   } = useSettingStore();
+
+  // Step 1: 언어 변경 시 쿠키에 선택한 언어 저장
+  const handleLocaleChange = (newLocale: string) => {
+    // 쿠키에 선택한 언어 저장 (예: 1년)
+    document.cookie = `NEXT_LOCALE=${newLocale}; Path=/; Max-age=31536000`;
+    router.refresh(); // 페이지 새로고침
+  };
 
   // 통화 변경 시 호출되는 handleCurrencyChange 함수
   const handleCurrencyChange = useCallback(
