@@ -33,6 +33,13 @@ export default auth((req) => {
     return NextResponse.redirect(url);
   }
 
+  // Step 3.5: 중복된 `/page/page/...` 패턴 정리
+  if (req.nextUrl.pathname.includes("/page/page")) {
+    const url = req.nextUrl.clone();
+    url.pathname = req.nextUrl.pathname.replace("/page/page", "/page/");
+    return NextResponse.redirect(url);
+  }
+
   // Step 4: "/" 경로 접속 시 쿠키 기반으로 locale 적용
   if (!currentLocale && userLocale) {
     const url = req.nextUrl.clone();
