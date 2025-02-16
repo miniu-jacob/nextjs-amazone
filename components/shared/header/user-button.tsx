@@ -20,6 +20,10 @@ export default async function UserButton() {
   const t = await getTranslations();
   const session = await auth();
 
+  const allowedRoles = ["admin", "owner"];
+
+  const isAdmin = allowedRoles.includes(session?.user.role || "");
+
   return (
     <div className="flex items-center gap-2">
       <DropdownMenu>
@@ -52,12 +56,17 @@ export default async function UserButton() {
                 <DropdownMenuItem>{t("Header.Your orders")}</DropdownMenuItem>
               </Link>
               {/* ADMIN 인 경우에 한해서 ADMIN 메뉴 보여주기 */}
-              {session.user.role === "admin" ||
+              {/* {session.user.role === "admin" ||
                 (session.user.role === "owner" && (
                   <Link href={"/admin/overview"} className="w-full">
                     <DropdownMenuItem>{t("Header.Admin")}</DropdownMenuItem>
                   </Link>
-                ))}
+                ))} */}
+              {isAdmin && (
+                <Link href={"/admin/overview"} className="w-full">
+                  <DropdownMenuItem>{t("Header.Admin")}</DropdownMenuItem>
+                </Link>
+              )}
             </DropdownMenuGroup>
             <DropdownMenuItem className="p-0 mb-1">
               <form className="w-full" action={logout}>
