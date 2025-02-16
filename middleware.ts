@@ -5,6 +5,7 @@ import { routing } from "./i18n/routing";
 
 import NextAuth from "next-auth";
 import authConfig from "./lib/auth.config";
+import { NextResponse } from "next/server";
 
 // 로그인 없이 접근 가능한 페이지 경로 정의
 const publicPages = ["/", "/search", "/login", "/register", "/cart", "/cart/(.*)", "/product/(.*)", "/page/(.*)"];
@@ -21,7 +22,25 @@ export default auth((req) => {
   // Step 1: 현재 요청에서 쿠키에 설정된 언어 가져오기
   const userLocale = req.cookies.get("NEXT_LOCALE")?.value;
 
-  // Step 2: 쿠키에가 없다면 기본 언어(`en-US`)를 사용
+  // Step 2: 현재 URL에서 locale을 감지한다.
+  const pathnameParts = req.nextUrl.pathname.split("/");
+  const currentLocale = routing.locales.includes(pathnameParts[1]) ? pathnameParts[1] : null;
+
+  // Step 3: URL에 locale 이 없다면 쿠키에 저장된 locale을 적용한다.
+  if (!currentLocale && userLocale) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/${userLocale}${req.nextUrl.pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  // Step 4: 중복된 locale 이 추가되지 않도록 수정
+  if (currentLocale && userLocale && currentLocale !== userLocale) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/${userLocale}${req.nextUrl.pathname.substring(currentLocale.length + 1)}`;
+    return NextResponse.redirect(url);
+  }
+
+  // Step 2: 쿠키가 없다면 기본 언어(`en-US`)를 사용
   if (!userLocale) {
     response.cookies.set("NEXT_LOCALE", routing.defaultLocale, {
       path: "/", // 쿠키의 경로

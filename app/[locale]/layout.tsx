@@ -50,7 +50,13 @@ export default async function RootLayout({
   const currencyCookie = (await cookies()).get("currency");
   const currency = currencyCookie ? currencyCookie.value : "USD";
 
-  const { locale } = await params;
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get("NEXT_LOCALE")?.value;
+  const urlParams = await params;
+  const urlLocale = urlParams.locale;
+
+  // 쿠키 값이 있으면 쿠키 값을 우선 사용, 없으면 URL 값을 사용
+  const locale = cookieLocale || urlLocale || "en-US";
 
   clog.info("[RootLayout] locale", locale);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
