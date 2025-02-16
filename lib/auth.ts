@@ -14,7 +14,6 @@ import authConfig from "./auth.config";
 import { connectToDatabase } from "./db";
 
 import bcrypt from "bcryptjs";
-import { clog } from "./jlogger";
 
 // OAuth
 import GoogleProvider from "next-auth/providers/google";
@@ -111,7 +110,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           token.name = existingUser.name || user.email?.split("@")[0];
         }
 
-        clog.info("[jwt] token", token);
+        // clog.info("[jwt] token", token);
       }
 
       // 세션 업데이트, trigger === 'update'의 의미는 세션이 업데이트될 때(예: 사용자가 자신의 이름을 변경한 경우) 호출된다.

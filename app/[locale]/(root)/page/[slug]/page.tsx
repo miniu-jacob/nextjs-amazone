@@ -1,7 +1,6 @@
 // app/[locale]/(root)/page/[slug]/page.tsx
 
 import { getWebPageBySlug } from "@/lib/actions/web-page.actions";
-import { clog } from "@/lib/jlogger";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 
@@ -24,10 +23,8 @@ export default async function ProductDetailsPage(props: {
 }) {
   const params = await props.params;
   const { slug } = params;
-  clog.info("[ProductDetailsPage]fetching page with slug ", slug);
   const webPage = await getWebPageBySlug(slug);
 
-  clog.info("[ProductDetailsPage] webPage", webPage?.title);
   if (!webPage) notFound();
 
   return (

@@ -4,7 +4,6 @@ import Stripe from "stripe";
 import Order from "@/lib/db/models/order.model";
 import "@/lib/db/models/user.model";
 import { NextRequest, NextResponse } from "next/server";
-import { clog } from "@/lib/jlogger";
 import { sendPurchaseReceipt } from "@/emails";
 import { connectToDatabase } from "@/lib/db";
 
@@ -16,14 +15,14 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 export async function POST(req: NextRequest) {
   // 1). 이벤트를 검증한다. Stripe객체에서 제공하는 webhooks.constructEvent() 메소드를 사용한다.
-  clog.log("[Stripe Webhook] Event received");
+  // clog.log("[Stripe Webhook] Event received");
   const event = await stripe.webhooks.constructEvent(
     await req.text(), // 요청의 본문을 문자열로 변환한다. 첫번째 인자로 전달한다.
     req.headers.get("stripe-signature") as string, // stripe-signature 헤더를 두번째 인자로 전달한다.
     process.env.STRIPE_WEBHOOK_SECRET as string, // stripe webhook secret을 세번째 인자로 전달한다.
   );
 
-  clog.log("[Stripe Webhook]:event type", event?.type);
+  // clog.log("[Stripe Webhook]:event type", event?.type);
 
   // 2). 이벤트 타입이 charge.succeeded인 경우(결제 성공)에만 처리한다.
   if (event.type === "charge.succeeded") {
@@ -40,7 +39,7 @@ export async function POST(req: NextRequest) {
       return new NextResponse("Bad Request", { status: 400 });
     }
 
-    clog.info("[Stripe Webhook] Order found", order);
+    // clog.info("[Stripe Webhook] Order found", order);
 
     // 5) 결제 정보를 업데이트한다.
     order.isPaid = true;
@@ -58,7 +57,7 @@ export async function POST(req: NextRequest) {
     try {
       await sendPurchaseReceipt({ order });
     } catch (error) {
-      clog.error("[Stripe Webhook] Error sending email to user", error);
+      console.error("[Stripe Webhook] Error sending email to user", error);
     }
     return NextResponse.json({
       message: "updateOrderToPaid was successful",

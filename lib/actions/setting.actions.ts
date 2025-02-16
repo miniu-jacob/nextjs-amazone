@@ -8,6 +8,7 @@ import { ISettingInput } from "@/types";
 import data from "../data";
 import { formatError } from "../utils";
 import { cookies } from "next/headers";
+import { auth } from "../auth";
 
 // 전역 캐싱용 변수
 const globalForSettings = global as unknown as { cachedSettings: ISettingInput | null };
@@ -31,7 +32,6 @@ export const getSetting = async (): Promise<ISettingInput> => {
     // DB에서 처음 문서를 찾는다.
     const setting = await Setting.findOne().lean();
 
-
     // 가져온 setting을 캐시에 저장한다. 없다면 기본값을 사용한다.
     globalForSettings.cachedSettings = setting ? JSON.parse(JSON.stringify(setting)) : data.settings[0];
   }
@@ -42,10 +42,15 @@ export const getSetting = async (): Promise<ISettingInput> => {
 // 3). 설정을 업데이트하는 함수를 정의한다.
 export const updateSetting = async (newSetting: ISettingInput) => {
   try {
+    // 권한 설정 (예: 오너만 업데이트 가능)
+    const allowedRoles = ["owner"];
+    const session = await auth();
+    if (!session) throw new Error("You are not authenticated.");
+    if (!allowedRoles.includes(session.user.role)) return { success: false, message: "Only owner can update the setting" };
+
     // (a). DB에 연결한다.
     await connectToDatabase();
 
-    // TODO: 데모를 위해 아래 부분 비활성화 (주석처리)
     // (b). 설정을 업데이트한다. (findOneAndUpdate 메서드를 사용한다.)
     const updateSetting = await Setting.findOneAndUpdate({}, newSetting, {
       upsert: true,
@@ -54,9 +59,6 @@ export const updateSetting = async (newSetting: ISettingInput) => {
 
     // (c). 업데이트된 설정을 캐시에 저장한다.
     globalForSettings.cachedSettings = JSON.parse(JSON.stringify(updateSetting));
-
-    // TODO: 데모를 위해 아래 updateSetting 이 아닌 newSetting으로 변경함.
-    // globalForSettings.cachedSettings = JSON.parse(JSON.stringify(newSetting));
 
     // (d). 성공 메시지를 반환한다.
     return {
