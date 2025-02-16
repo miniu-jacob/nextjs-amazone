@@ -26,21 +26,21 @@ export default auth((req) => {
   const pathnameParts = req.nextUrl.pathname.split("/");
   const currentLocale = routing.locales.includes(pathnameParts[1]) ? pathnameParts[1] : null;
 
-  // Step 3: URL에 locale 이 없다면 쿠키에 저장된 locale을 적용한다.
-  if (!currentLocale && userLocale) {
-    const url = req.nextUrl.clone();
-    url.pathname = `/${userLocale}${req.nextUrl.pathname}`;
-    return NextResponse.redirect(url);
-  }
-
-  // Step 4: 중복된 locale 이 추가되지 않도록 수정
+  // Step 3: 중복된 locale 추가 방지
   if (currentLocale && userLocale && currentLocale !== userLocale) {
     const url = req.nextUrl.clone();
     url.pathname = `/${userLocale}${req.nextUrl.pathname.substring(currentLocale.length + 1)}`;
     return NextResponse.redirect(url);
   }
 
-  // Step 2: 쿠키가 없다면 기본 언어(`en-US`)를 사용
+  // Step 4: "/" 경로 접속 시 쿠키 기반으로 locale 적용
+  if (!currentLocale && userLocale) {
+    const url = req.nextUrl.clone();
+    url.pathname = `/${userLocale}${req.nextUrl.pathname}`;
+    return NextResponse.redirect(url);
+  }
+
+  // Step 5: 쿠키가 없다면 기본 언어(`en-US`)를 사용
   if (!userLocale) {
     response.cookies.set("NEXT_LOCALE", routing.defaultLocale, {
       path: "/", // 쿠키의 경로

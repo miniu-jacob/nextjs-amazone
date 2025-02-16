@@ -45,15 +45,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // getSetting를 통해 설정을 가져온다.
+  const cookieStore = await cookies();
   const setting = await getSetting();
   // 쿠키에서 currency 정보를 가져오고 없다면 기본값을 설정
-  const currencyCookie = (await cookies()).get("currency");
+  const currencyCookie = cookieStore.get("currency");
   const currency = currencyCookie ? currencyCookie.value : "USD";
 
-  const cookieStore = await cookies();
   const cookieLocale = cookieStore.get("NEXT_LOCALE")?.value;
   const urlParams = await params;
-  const urlLocale = urlParams.locale;
+  const urlLocale = urlParams?.locale;
 
   // 쿠키 값이 있으면 쿠키 값을 우선 사용, 없으면 URL 값을 사용
   const locale = cookieLocale || urlLocale || "en-US";
@@ -65,7 +65,7 @@ export default async function RootLayout({
   }
 
   // 현재 언어에 맞는 번역된 메시지를 가져온다.
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   return (
     <html lang={locale} suppressHydrationWarning>
